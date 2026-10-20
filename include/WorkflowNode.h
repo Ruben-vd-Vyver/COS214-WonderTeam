@@ -6,8 +6,8 @@
 
 class WorkflowNode {
 	protected:
-		std::string id;
-		std::string name;
+		std::string id_;
+		std::string name_;
 	public:
 		WorkflowNode(std::string id, std::string name);
 		virtual ~WorkflowNode() = default;
