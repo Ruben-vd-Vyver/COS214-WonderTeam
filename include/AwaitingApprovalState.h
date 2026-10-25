@@ -7,9 +7,9 @@ class AwaitingApprovalState : public TaskState
 {
 public:
     std::string getName() const override;
-    bool complete(Task &t) override; // -> InProgress
-    bool reject(Task &t) override;   // -> Rejected
-    bool escalate(Task &t) override; // -> Escalated
+    bool complete(Task &t) override;
+    bool reject(Task &t) override;
+    bool escalate(Task &t) override;
 };
 
 #endif // AWAITINGAPPROVALSTATE_H

@@ -7,7 +7,7 @@ class EscalatedState : public TaskState
 {
 public:
     std::string getName() const override;
-    bool assign(Task &t, Participant *p) override; // -> Assigned
+    bool assign(Task &t, Participant *p) override;
 };
 
 #endif // ESCALATEDSTATE_H

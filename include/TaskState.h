@@ -4,7 +4,7 @@
 #include <string>
 
 class Task;
-struct Participant;
+class Participant;
 // State pattern - abstract State
 
 class TaskState
