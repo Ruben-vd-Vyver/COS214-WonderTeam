@@ -3,9 +3,9 @@
 WorkflowNode::WorkflowNode(std::string id, std::string name)
 	: id_(std::move(id)), name_(std::move(name)) {}
 
-const std::string& WorkflowNode.getId() const {return id_;}
+const std::string& WorkflowNod::getId() const {return id_;}
 
-const std::string& WorkflowNode.getName() const {return name_;}
+const std::string& WorkflowNode::getName() const {return name_;}
 
 void WorkflowNode::add(std::shared_ptr<WorkflowNode>) {
 	throw std::logic_error(
