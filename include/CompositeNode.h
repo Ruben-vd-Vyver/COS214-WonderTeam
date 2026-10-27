@@ -11,8 +11,7 @@ class CompositeNode : public WorkflowNode {
 		bool remove(const std::string& id) override;
 		std::shared_ptr<WorkflowNode> getChild(
 				const std::string& id) const override;
-		const std::vector<std::shared_ptr<WorkflowNode>>& getChildren
-			const override;
+		const std::vector<std::shared_ptr<WorkflowNode>>& getChildren() const override;
 		void activate() override;
 		bool isComplete() const override;
 		bool hasFailed() const override;
