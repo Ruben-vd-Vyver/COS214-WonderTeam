@@ -1,57 +1,61 @@
 #include "CompositeNode.h"
 #include <algorithm>
+#include <stdexcept>
+#include "DepthFirstIterator.h"
+#include "WorkItem.h"
 
-CompositeNode::CompositeNode(std::string id, std::string name)
-	: WorkflowNode(std::move(id), std::move(name)) {}
+CompositeNode::CompositeNode(std::string name) : WorkflowNode (std::move(name)) 
+{}
 
-std::string CompositeNode::label() const { return "Composite"; }
-
-void CompositeNode::add(std::shared_ptr<WorkflowNode> node) {
-	if(!node) throw std::invalid_argument("cannot add a null node");
-	if (node.get() == this) throw std::invalid_argument(
-			"a node cannot contain itself");
-	if (getChild(node->getId())) throw std::invalid_argument(
-			"duplicate node id: " + node->getId());
-	children_.push_back(std::move(node));
+CompositeNode :: ~CompositeNode() {
+	for (auto* c : children_) delete c;
 }
 
-bool CompositeNode::remove(const std::string& id) {
-	auto it = std::find_if(children_.begin(), children_.end(),
-			[&](const auto& c) {
-			return c->getId() == id;});
-	if (it ==children_.end()) return false;
-	children_.erase(it);
-	return true;
-}
-
-std::shared_ptr<WorkflowNode> CompositeNode::getChild(const std::string& id)
-	const {
-		for (const auto& c:children_) if (c->getId() == id) return c;
-		return nullptr;
+bool CompositeNode::contains(const WorkflowNode* node) const {
+	for (const auto* c : children_) {
+		if (c==node) return true;
+		if (const auto* comp = dynamic_cast<const CompositeNode*>(c))
+			if(comp->contains(node)) return true;
 	}
+	return false;
+}
 
+void CompositeNode::add(WorkflowNode* node) {
+	if(!node) throw std::invalid_argument("cannot add a null node");
+	if (node==this || contains(node)) throw
+		std::invalid_argument("node is already in this workflow");
+	if (const auto* comp = dynamic_cast<const CompositeNode*>(node))
+		if (comp->contains(this)) throw 
+			std::invalid_argument ("adding this node creates a cycle");
+	children_.push_back(node);
+}
+
+void CompositeNode::remove(WorkflowNode* node {
+	auto it = std::find(children_.begin(), children_.end(), node);
+	if (it == children_.end()) throw std::invalid_argument( 
+			"node is not a direct child");
+	children_.erase(it);
+	delete node;
+}
 const std::vector<std::shared_ptr<WorkflowNode>>& CompositeNode::getChildren()
 	const {return children_;}
-
-void CompositeNode::activate() {
-	for (auto& c : children_) if (!c->isComplete()) c-> activate();
-}
 
 bool CompositeNode::isComplete() const {
 	if (children_.empty()) return false;
 	return std::all_of(children_.begin(), children_.end(), [] 
-			(const auto& c) { return c-> isComplete();});
+			(const WorkflowNode* c) { return c-> isComplete();});
 }
 
-bool CompositeNode::hasFailed() const {
-	return std::any_of(children_.begin(), children_.end(), [](const auto& c)
-			{return c->hasFailed();});
+WorkItem* CompositeNode::find(const std::string& id) {
+	for (auto* c : children_)
+		if (WorkItem* hit = c->find(id)) return hit;
+	return nullptr;
 }
 
-void CompositeNode::print(int indent) const {
-	std::cout << std::string(indent, ' ') << "["<< label()<<"]"<<name_
-		<< (isComplete() ? " (complete)" : hasFailed() ? " (Failed)"
-				:"") << "\n";
-	for (const auto& c : children_) c->print(indent+2);
+WorkflowIterator* CompositeNode::createIterator() {
+	return new DepthFirstIterator(this);
 }
 
+void CompositeNode::cloneChildrenInto(CompositeNode& target) const {
+	for (const auto* c : children_) target.add(c->clone());
+}
