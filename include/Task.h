@@ -20,7 +20,7 @@ class Task : public WorkflowNode {
 		virtual int getPriority() const;
 		virtual std::string describe() const;
 		void activate() override;
-		void isComplete() const override;
+		bool isComplete() const override;
 		bool hasFailed() const override;
 		void print(int indent = 0) const override;
 };
