@@ -6,9 +6,21 @@ Task::Task(std::string id, std::string name, std::string description) :
 
 bool Task::assign(Participant* p) {
 	if(!p || state_ == "Completed" || state_=="Rejected") return false;
-	assignee_ =p;
+	assignees_.push_back(p);
 	state_ = "Assigned";
 	return true;
+}
+
+bool Task::unassign(Participant* p){
+	if(!p || state_ == "Completed" || state_=="Rejected") return false;
+	auto newEnd = std::remove(assignees_.begin(), assignees_.end(), p);
+	if (newEnd == assignees_.end()) return false;
+	assignees_.erase(newEnd, assignees_.end());
+	if (assignees_.empty())
+		state_ = "Pending";
+
+	return true;
+
 }
 
 bool Task::start() {
@@ -33,8 +45,8 @@ std::string Task::getState() const {
 	return state_;
 }
 
-Participant* Task::getAssignee() const {
-	return assignee_;
+std::vector<Participant*> Task::getAssignees() const {
+	return assignees_;
 }
 
 int Task::getPriority() const {
