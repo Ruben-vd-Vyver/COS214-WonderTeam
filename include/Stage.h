@@ -6,7 +6,8 @@ class Stage : public CompositeNode {
 	protected:
 		std::string label() const override;
 	public:
-		Stage(std::string id, std::string name, bool parallel = false);
+		explicit Stage(std::string id, std::string name, bool parallel = false);
 		bool isParallel() const;
+		WorkflowNode* clone() const override;
 		void activate() override;
 };
