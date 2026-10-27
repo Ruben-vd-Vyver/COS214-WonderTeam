@@ -15,8 +15,9 @@ class WorkItemCommand {
         Participant* participant_;
     public: 
         WorkItemCommand(Task* task, Participant* participant);
-        virtual void execute() = 0;
-        virtual void undo() = 0;
+        virtual ~WorkItemCommand() = default;
+        virtual bool execute() = 0;
+        virtual bool undo() = 0;
         virtual std::string describe() = 0;
 };
 

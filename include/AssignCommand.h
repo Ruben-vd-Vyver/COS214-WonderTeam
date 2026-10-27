@@ -6,10 +6,10 @@
 class AssignCommand: public WorkItemCommand {
     public:
         AssignCommand(Task* task, Participant* participant);
-        void execute();
-        void undo();
+        bool execute();
+        bool undo();
         std::string describe();
-}
+};
 
 
 #endif //ASSIGN_COMMAND

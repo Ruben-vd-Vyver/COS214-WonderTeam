@@ -5,26 +5,28 @@ AssignCommand::AssignCommand(Task* task, Participant* participant) : WorkItemCom
     //Basic constructor, just calls Parents constructor
 }
 
-void AssignCommand::execute(){
+bool AssignCommand::execute(){
     if (hasExecuted_)
-        return;
+        return false;
     if (task_->assign(participant_)){
         std::cout << "Command executed successfully\n";
         hasExecuted_ = true;
-        return;
+        return true;
     }
     std::cout << "Error when executing command: Task in a fixed/final state\n";
+    return false;
 }
 
-void AssignCommand::undo(){
+bool AssignCommand::undo(){
     if (!hasExecuted_)
-        return;
+        return false;
     if (task_->unassign(participant_)){
         std::cout << "Command revert successfully\n";
         hasExecuted_ = false;
-        return;
+        return true;
     }
     std::cout << "Error when reverting command: Task in a fixed/final state\n";
+    return false;
 }
 
 std::string AssignCommand::describe(){
