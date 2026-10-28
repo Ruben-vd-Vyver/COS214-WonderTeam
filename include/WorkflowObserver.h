@@ -6,8 +6,8 @@
 //Observer
 class WorkflowObserver{
     public:
-    virtual ~WorkflowObserver() {}
-    virtual void onEvent(const WorkflowEvent& event) = 0;
+        virtual ~WorkflowObserver() {}
+        virtual void onEvent(const WorkflowEvent& event) = 0;
 };
 
 #endif
