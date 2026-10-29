@@ -1,8 +1,6 @@
 #include "WorkItem.h"
 #include "NullIterator.h"
 
-WorkItem::WorkItem(std::string name) : WorkflowNode(std::move(name)) {}
-
 WorkItem::WorkItem(std::string id, std::string name) : 
 	WorkflowNode(std::move(id), std::move(name)) {}
 
@@ -11,4 +9,8 @@ WorkItem* WorkItem::find(const std::string& id) {
 
 WorkflowIterator* WorkItem::createIterator() {
 	return new NullIterator();
+}
+
+WorkItem* WorkItem::asWorkItem() {
+	return this;
 }

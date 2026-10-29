@@ -1,6 +1,7 @@
 #include "Stage.h"
 
-Stage::Stage(std::string name, bool parallel) : CompositeNode(std::move(name)),
+Stage::Stage(std::string id, std::string name, bool parallel) : 
+	CompositeNode(std::move(id), std::move(name)),
 	parallel_(parallel) {}
 
 WorkflowNode* Stage::clone() const {

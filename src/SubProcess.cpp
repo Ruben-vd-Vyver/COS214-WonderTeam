@@ -1,7 +1,8 @@
 #include "SubProcess.h"
 
-SubProcess::SubProcess(std::string name, int sourceVersion) :
-	CompositeNode(std::move(name)), sourceVersion_(sourceVersion) {}
+SubProcess::SubProcess(std::string id, std::string name, int sourceVersion) :
+	CompositeNode(std::move(id), std::move(name)), 
+	sourceVersion_(sourceVersion) {}
 
 int SubProcess::getSourceVersion() const {
 	return sourceVersion_;
