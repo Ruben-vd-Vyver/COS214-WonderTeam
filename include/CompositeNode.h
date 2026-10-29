@@ -2,10 +2,10 @@
 
 class CompositeNode : public WorkflowNode {
 	protected:
-		std::vector<std::shared_ptr<WorkflowNode>> children_;
-		explicit CompositeNode(std::string name);
+		std::vector<WorkflowNode*> children_;
+		WorkflowSubject* subject_ = nullptr;
+		CompositeNode(std::string id,std::string name);
 		void cloneChildrenInto(CompositeNode& target) const;
-		bool contains(const WorkflowNode* node) const;
 
 	public:
 		~CompositeNode() override;
@@ -14,6 +14,8 @@ class CompositeNode : public WorkflowNode {
 		const std::vector<stdLLshared_ptr<WorkflowNode>> & 
 			getChildren() const override;
 		bool isComplete() const override;
+		int childCount() const override;
+		WorkflowNode* child(int i) const override;
 		WorkItem* find(const std::string& id) override;
 		WorkflowIterator* createIterator() override;
 };

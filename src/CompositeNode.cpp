@@ -4,20 +4,25 @@
 #include "DepthFirstIterator.h"
 #include "WorkItem.h"
 
-CompositeNode::CompositeNode(std::string name) : WorkflowNode (std::move(name)) 
+namespace {
+	bool subtreeContains(const WorkflowNode* root, 
+			const WorkflowNode* target) {
+		if (root == target) return true;
+		for (int i=0; i<root->childCount(); ++i) {
+			if (subtreeContains(root->child(i), target)) {
+				return true;
+			}
+			return false;
+		}
+	}
+}
+
+CompositeNode::CompositeNode(std::string id, std::string name) :
+	WorkflowNode (std::move(id), std::move(name)) 
 {}
 
 CompositeNode :: ~CompositeNode() {
 	for (auto* c : children_) delete c;
-}
-
-bool CompositeNode::contains(const WorkflowNode* node) const {
-	for (const auto* c : children_) {
-		if (c==node) return true;
-		if (const auto* comp = dynamic_cast<const CompositeNode*>(c))
-			if(comp->contains(node)) return true;
-	}
-	return false;
 }
 
 void CompositeNode::add(WorkflowNode* node) {
@@ -44,6 +49,21 @@ bool CompositeNode::isComplete() const {
 	if (children_.empty()) return false;
 	return std::all_of(children_.begin(), children_.end(), [] 
 			(const WorkflowNode* c) { return c-> isComplete();});
+}
+
+int CompositeNode::childCount() const {
+	return static_cast<int>(children_.size());
+}
+
+WorkflowNode* CompositeNode::child(int i) const {
+	if (i<0 || i>= childCount()) throw 
+		std::out_of_range("child index is out of range");
+	return children_[i];
+}
+
+void CompositeNode::bind(WorkflowSubject* s) {
+	subject_ = s;
+	for (auto* c : children_) c->bind(s);
 }
 
 WorkItem* CompositeNode::find(const std::string& id) {
