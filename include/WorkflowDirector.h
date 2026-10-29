@@ -1,19 +1,32 @@
-#ifndef WORKFLOWDIRECTOR_H
-#define WORKFLOWDIRECTOR_H
+#ifndef WORKFLOW_DIRECTOR_H
+#define WORKFLOW_DIRECTOR_H
 
-#include "Director.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <map>
+#include "WorkflowBuilder.h"
+#include "ApprovalHandler.h"
+#include "WorkflowCommands.h"
 
-class ApprovalHandler;
-
-class WorkflowDirector : public Director
+class WorkflowDirector
 {
-private:
-    ApprovalHandler *signOffChain_;
-    ApprovalHandler *certChain_;
-
 public:
-    WorkflowDirector(ApprovalHandler *signOffChain = nullptr, ApprovalHandler *certChain = nullptr);
-    void construct(WorkflowBuilder &b) override;
+    explicit WorkflowDirector(std::istream &inputSource);
+    virtual ~WorkflowDirector();
+
+    bool construct(WorkflowBuilder &builder);
+    void registerApprovalChain(const std::string &name, ApprovalHandler *chain);
+
+private:
+    std::istream &in_;
+    std::map<std::string, ApprovalHandler *> chains_;
+    std::map<std::string, Command *> commands_;
+
+    void initializeDefaultCommands();
+    std::vector<std::string> tokenize(const std::string &line, char delimiter);
+    std::string trim(const std::string &str);
+    std::string toLower(const std::string &str);
 };
 
-#endif
+#endif // WORKFLOW_DIRECTOR_H

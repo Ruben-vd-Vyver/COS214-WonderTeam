@@ -6,21 +6,26 @@
 #include "WorkItem.h"
 #include "BasicWorkItem.h"
 
+// Initializes counters used to generate stage and work item identifiers
 DefinitionBuilder::DefinitionBuilder() : stageCount_(0), itemCount_(0) {}
 
+// Releases resources owned by the builder
 DefinitionBuilder::~DefinitionBuilder() {}
 
+// Ensures the builder has an active workflow product
 void DefinitionBuilder::requireProduct() const
 {
     if (!product_)
         throw "DefinitionBuilder: call reset() first";
 }
 
+// Returns the currently open stage being constructed
 CompositeNode &DefinitionBuilder::current() const
 {
     return *openStages_.top();
 }
 
+// Starts a new workflow definition and resets the builder state
 void DefinitionBuilder::reset(const std::string &name, int version)
 {
     product_.reset(new WorkflowDefinition(name, version));
@@ -34,6 +39,7 @@ void DefinitionBuilder::reset(const std::string &name, int version)
     openStages_.push(root);
 }
 
+// Opens a new stage and adds it to the current stage hierarchy
 void DefinitionBuilder::beginStage(const std::string &name, bool parallel)
 {
     requireProduct();
@@ -43,6 +49,7 @@ void DefinitionBuilder::beginStage(const std::string &name, bool parallel)
     lastTask_.reset();
 }
 
+// Closes the current stage and returns construction to its parent
 void DefinitionBuilder::endStage()
 {
     requireProduct();
@@ -52,6 +59,7 @@ void DefinitionBuilder::endStage()
     lastTask_.reset();
 }
 
+// Creates a task and adds a corresponding work item to the current stage
 void DefinitionBuilder::addTask(const std::string &name, const std::string &role)
 {
     requireProduct();
@@ -61,6 +69,7 @@ void DefinitionBuilder::addTask(const std::string &name, const std::string &role
     lastTask_ = spec;
 }
 
+// Adds a caller provided work item to the current stage
 void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
 {
     requireProduct();
@@ -70,6 +79,7 @@ void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
     lastTask_.reset();
 }
 
+// Adds an approval handler to the task most recently created by the builder
 void DefinitionBuilder::requireApproval(const std::string &trigger, ApprovalHandler *chain)
 {
     requireProduct();
@@ -81,6 +91,7 @@ void DefinitionBuilder::requireApproval(const std::string &trigger, ApprovalHand
     product_->addChain(chain);
 }
 
+// Validates and returns the completed workflow definition
 WorkflowDefinition *DefinitionBuilder::getResult()
 {
     requireProduct();
