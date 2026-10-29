@@ -3,26 +3,31 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+class WorkItem;
+class WorkflowIterator;
+class WorkflowSubject;
 
 class WorkflowNode {
 	protected:
 		std::string id_;
 		std::string name_;
-	public:
 		WorkflowNode(std::string id, std::string name);
+	public:
 		virtual ~WorkflowNode() = default;
+		WorkflowNode(const WorkflowNode&) =delete;
+		WorkflowNode& operator=(const WorkflowNode&) = delete;
+
 		const std::string& getId() const;
-		const std::string& getName() const;
-		//The following handle all the children
-		virtual void add(std::shared_ptr<WorkflowNode> node);
-		virtual bool remove(const std::string& id);
-		virtual std::shared_ptr<WorkflowNode> getChild
-			(const std::string& id) const;
-		virtual const std::vector<std::shared_ptr<WorkflowNode>>& 
-			getChildren() const;
-		//end of child management, now utilities
-		virtual void activate() =0;
-		virtual bool isComplete() const=0;
-		virtual bool hasFailed() const;
-		virtual void print(int indent=0) const=0;
+		std::string getName() const;
+
+		virtual WorkflowNode* clone() const=0;
+		virtual void activate() = 0;
+		virtual bool isComplete() const = 0;
+		virtual void bind(WorkflowSubject* s) = 0;
+		virtual WorkItem* find(const std::string& id) = 0;
+		virtual WorkflowIterator* createIterator() = 0;
+
+		virtual int childCount() const;
+		virtual WorkflowNode* child(int i) const;
+		virtual WorkItem* asWorkItem();
 };

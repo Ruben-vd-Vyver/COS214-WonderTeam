@@ -1,10 +1,10 @@
 #include "CompositeNode.h"
 
 class SubProcess : public CompositeNode {
-	protected:
-		std::string label() const override;
+	int sourceVersion_;
 	public:
-		SubProcess(std::string id, std::string name);
-		bool isBlocked() const;
-		void activate() override;
+	explicit SubProcess(std::string name, int sourceVersion=1);
+	int getSourceVersion() const;
+	WorkflowNode* clone() const override;
+	void activate() override;
 };
