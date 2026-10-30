@@ -10,7 +10,8 @@ class Participant; //forward declaration (Participant.h includes Task.h)
 class Task : public WorkflowNode
 {
     friend class TaskState;
-
+private:
+    std::string requiredRole;
 protected:
     std::unique_ptr<TaskState> state_;
     bool activated_ = false;
@@ -22,7 +23,7 @@ protected:
     Task(const Task &other);
 
 public:
-    Task(std::string id, std::string name, std::string description = "");
+    Task(std::string role,std::string id, std::string name, std::string description = "");
     virtual bool assign(Participant *p);
     virtual bool start();
     virtual bool complete();
@@ -37,6 +38,7 @@ public:
     bool isComplete() const override;
     bool hasFailed() const override;
     void print(int indent = 0) const override;
+    std::string getRequiredRole() const;
 
     // [Prototype] covariant return: cloning a Task gives back a Task*
     Task *clone() const override;

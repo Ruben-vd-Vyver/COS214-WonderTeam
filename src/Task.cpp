@@ -1,7 +1,7 @@
 #include "Task.h"
 #include "PendingState.h"
 
-Task::Task(std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()), description_(std::move(description)) {}
+Task::Task(std::string role, std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()),requiredRole(role), description_(std::move(description)) {}
 
 // [Prototype]
 Task::Task(const Task &other)
@@ -50,3 +50,4 @@ void Task::print(int indent) const
 {
     std::cout << std::string(indent, ' ') << "[Task] " << describe() << "\n";
 }
+

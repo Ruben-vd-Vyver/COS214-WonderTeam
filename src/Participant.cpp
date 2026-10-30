@@ -48,3 +48,11 @@ std::string Participant::describe(){
 
     return description.str();
 }
+
+void Participant::incrementWorkload() {
+    workload_++;
+}
+
+std::string Participant::getName() const {
+    return name_;
+}

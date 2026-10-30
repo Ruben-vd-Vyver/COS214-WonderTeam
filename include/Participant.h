@@ -28,6 +28,8 @@ class Participant {
         int getWorkload() const;
         int getAuthority() const;
         std::string describe();
+        std::string getName() const;
+        void incrementWorkload();
 
 };
 
