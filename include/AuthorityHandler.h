@@ -5,13 +5,11 @@
 
 //ConcreteHandler
 class AuthorityHandler : public ApprovalHandler {
-    private:
-        int responseWindow;
     protected:
         bool canHandle(ApprovalRequest& req);
         void decide(ApprovalRequest& req);
     public:
-        AuthorityHandler(int window);
+        AuthorityHandler();
 };
 
 #endif
