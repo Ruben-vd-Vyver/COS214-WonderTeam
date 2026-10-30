@@ -1,7 +1,9 @@
 #include "../include/WorkItemCommand.h"
+#include <stdexcept>
 
-WorkItemCommand::WorkItemCommand(Task* task, Participant* participant) 
-: task_(task), participant_(participant) {
-    // Basic constructor
-    hasExecuted_ = false;
+WorkItemCommand::WorkItemCommand(WorkItem* workItem, Participant* participant)
+: workItem_(workItem), participant_(participant) {
+    if (!workItem_) {
+        throw std::invalid_argument("a work item command needs a WorkItem");
+    }
 }

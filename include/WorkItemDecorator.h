@@ -1,4 +1,4 @@
-#include "WorkItem"
+#include "WorkItem.h"
 
 class WorkItemDecorator : public WorkItem {
 protected:

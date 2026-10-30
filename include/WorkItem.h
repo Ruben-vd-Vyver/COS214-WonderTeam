@@ -1,6 +1,6 @@
 #include <string>
 #include <WorkflowNode.h>
-#include <WorkItemMemento.h>
+#include "WorkItemMemento.h"
 #include "Task.h"
 
 class Participant;

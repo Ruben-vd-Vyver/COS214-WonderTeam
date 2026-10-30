@@ -4,8 +4,10 @@
 #include "WorkItemCommand.h"
 
 class AssignCommand: public WorkItemCommand {
+    private:
+        Participant* previousAssignee_ = nullptr;
     public:
-        AssignCommand(Task* task, Participant* participant);
+        AssignCommand(WorkItem* workItem, Participant* participant);
         bool execute();
         bool undo();
         std::string describe();
