@@ -1,47 +1,29 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include <memory>
-#include "WorkflowNode.h"
-#include "TaskState.h"
+#include <map>
+#include <string>
+#include <vector>
 
-class Participant; //forward declaration (Participant.h includes Task.h)
+class ApprovalHandler;
 
-class Task : public WorkflowNode
+class Task
 {
-    friend class TaskState;
 private:
-    std::string requiredRole;
-protected:
-    std::unique_ptr<TaskState> state_;
-    bool activated_ = false;
-    Participant *assignee_ = nullptr;
-    std::string description_;
-
-    // [Prototype] deep copy: the current state object is cloned too, so the copy and the original never share a TaskState.
-    // The assignee is a shared Participant (not owned), so the pointer is copied as-is.
-    Task(const Task &other);
+    std::string name_;
+    std::string requiredRole_;
+    std::vector<std::string> requiredFields_;
+    std::map<std::string, ApprovalHandler *> approvals_;
 
 public:
-    Task(std::string role,std::string id, std::string name, std::string description = "");
-    virtual bool assign(Participant *p);
-    virtual bool start();
-    virtual bool complete();
-    virtual bool requestApproval();
-    virtual bool reject(const std::string &reason);
-    virtual bool escalate();
-    virtual std::string getState() const;
-    virtual Participant *getAssignee() const;
-    virtual int getPriority() const;
-    virtual std::string describe() const;
-    void activate() override;
-    bool isComplete() const override;
-    bool hasFailed() const override;
-    void print(int indent = 0) const override;
-    std::string getRequiredRole() const;
-
-    // [Prototype] covariant return: cloning a Task gives back a Task*
-    Task *clone() const override;
+    Task(std::string name, std::string role);
+    const std::string &getName() const;
+    const std::string &getRequiredRole() const;
+    void addRequiredField(const std::string &field);
+    const std::vector<std::string> &getRequiredFields() const;
+    void requireApproval(const std::string &trigger, ApprovalHandler *chain);
+    bool requiresApproval(const std::string &trigger) const;
+    ApprovalHandler *getApprovalChain(const std::string &trigger) const;
 };
 
 #endif

@@ -1,53 +1,51 @@
 #include "Task.h"
-#include "PendingState.h"
 
-Task::Task(std::string role, std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()),requiredRole(role), description_(std::move(description)) {}
+// Creates a task specification with a name and the role that performs it
+Task::Task(std::string name, std::string role) : name_(std::move(name)), requiredRole_(std::move(role)) {}
 
-// [Prototype]
-Task::Task(const Task &other)
-    : WorkflowNode(other),
-      state_(other.state_->clone()),
-      activated_(other.activated_),
-      assignee_(other.assignee_),
-      description_(other.description_) {}
-
-// [Prototype]
-Task *Task::clone() const { return new Task(*this); }
-
-bool Task::assign(Participant *p) { return state_->assign(*this, p); }
-
-bool Task::start() { return state_->start(*this); }
-
-bool Task::complete() { return state_->complete(*this); }
-
-bool Task::requestApproval() { return state_->requestApproval(*this); }
-
-bool Task::reject(const std::string &reason)
+// Returns the task name
+const std::string &Task::getName() const
 {
-    return state_->reject(*this, reason);
+    return name_;
 }
 
-bool Task::escalate() { return state_->escalate(*this); }
-
-std::string Task::getState() const { return state_->getName(); }
-
-Participant *Task::getAssignee() const { return assignee_; }
-
-int Task::getPriority() const { return 0; }
-
-std::string Task::describe() const
+// Returns the role required to perform the task
+const std::string &Task::getRequiredRole() const
 {
-    return name_ + " <" + getState() + "> " + description_;
+    return requiredRole_;
 }
 
-void Task::activate() { state_->activate(*this); }
-
-bool Task::isComplete() const { return state_->isComplete(); }
-
-bool Task::hasFailed() const { return state_->hasFailed(); }
-
-void Task::print(int indent) const
+// Declares a field that must be filled in before the task can complete
+void Task::addRequiredField(const std::string &field)
 {
-    std::cout << std::string(indent, ' ') << "[Task] " << describe() << "\n";
+    if (field.empty())
+        throw std::string("Task::addRequiredField: field name is empty");
+    requiredFields_.push_back(field);
 }
 
+// Returns the required fields in declaration order
+const std::vector<std::string> &Task::getRequiredFields() const
+{
+    return requiredFields_;
+}
+
+// Attaches an approval chain to a trigger, replacing any earlier one
+void Task::requireApproval(const std::string &trigger, ApprovalHandler *chain)
+{
+    if (!chain)
+        throw std::string("Task::requireApproval: chain is null");
+    approvals_[trigger] = chain;
+}
+
+// Reports whether a trigger needs approval
+bool Task::requiresApproval(const std::string &trigger) const
+{
+    return approvals_.find(trigger) != approvals_.end();
+}
+
+// Returns the chain for a trigger, or nullptr when none is required
+ApprovalHandler *Task::getApprovalChain(const std::string &trigger) const
+{
+    std::map<std::string, ApprovalHandler *>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? nullptr : it->second;
+}
