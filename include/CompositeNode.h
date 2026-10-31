@@ -11,7 +11,7 @@ class CompositeNode : public WorkflowNode {
 		~CompositeNode() override;
 		void add(WorkflowNode* node);
 		void remove(WorkflowNode* node);
-		const std::vector<stdLLshared_ptr<WorkflowNode>> & 
+		const std::vector<std::shared_ptr<WorkflowNode>> & 
 			getChildren() const override;
 		bool isComplete() const override;
 		int childCount() const override;
