@@ -1,53 +1,25 @@
 #include "Task.h"
-#include "PendingState.h"
 
-Task::Task(std::string role, std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()),requiredRole(role), description_(std::move(description)) {}
+Task::Task(std::string name, std::string role)
+	: name_(std::move(name)), requiredRole_(std::move(role)) {}
 
-// [Prototype]
-Task::Task(const Task &other)
-    : WorkflowNode(other),
-      state_(other.state_->clone()),
-      activated_(other.activated_),
-      assignee_(other.assignee_),
-      description_(other.description_) {}
+const std::string& Task::getName() const { return name_; }
 
-// [Prototype]
-Task *Task::clone() const { return new Task(*this); }
+const std::string& Task::getRequiredRole() const { return requiredRole_; }
 
-bool Task::assign(Participant *p) { return state_->assign(*this, p); }
+const std::vector<std::string>& Task::getRequiredFields() const { return requiredFields_; }
 
-bool Task::start() { return state_->start(*this); }
+void Task::addRequiredField(const std::string& field) { requiredFields_.push_back(field); }
 
-bool Task::complete() { return state_->complete(*this); }
-
-bool Task::requestApproval() { return state_->requestApproval(*this); }
-
-bool Task::reject(const std::string &reason)
-{
-    return state_->reject(*this, reason);
+void Task::requireApproval(const std::string& trigger, ApprovalHandler* chain) {
+	approvals_[trigger] = chain;
 }
 
-bool Task::escalate() { return state_->escalate(*this); }
-
-std::string Task::getState() const { return state_->getName(); }
-
-Participant *Task::getAssignee() const { return assignee_; }
-
-int Task::getPriority() const { return 0; }
-
-std::string Task::describe() const
-{
-    return name_ + " <" + getState() + "> " + description_;
+bool Task::requiresApproval(const std::string& trigger) const {
+	return approvals_.find(trigger) != approvals_.end();
 }
 
-void Task::activate() { state_->activate(*this); }
-
-bool Task::isComplete() const { return state_->isComplete(); }
-
-bool Task::hasFailed() const { return state_->hasFailed(); }
-
-void Task::print(int indent) const
-{
-    std::cout << std::string(indent, ' ') << "[Task] " << describe() << "\n";
+ApprovalHandler* Task::getApprovalChain(const std::string& trigger) const {
+	std::map<std::string, ApprovalHandler*>::const_iterator it = approvals_.find(trigger);
+	return it == approvals_.end() ? nullptr : it->second;
 }
-
