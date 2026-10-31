@@ -20,7 +20,7 @@ int WorkflowNode::childCount() const {
 	return 0;
 }
 
-WOrkflowNode* WorkflowNode::child(int) const {
+WorkflowNode* WorkflowNode::child(int) const {
 	throw std::out_of_range("node has no such child");
 }
 
