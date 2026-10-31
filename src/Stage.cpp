@@ -5,7 +5,7 @@ Stage::Stage(std::string id, std::string name, bool parallel) :
 	parallel_(parallel) {}
 
 WorkflowNode* Stage::clone() const {
-	Stage* copy = new Stage(name_, parallel_);
+	Stage* copy = new Stage(id_, name_, parallel_);
 	cloneChildrenInto(*copy);
 	return copy;
 }

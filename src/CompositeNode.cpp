@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include "DepthFirstIterator.h"
-#include "WorkItem.h"
 
 namespace {
 	bool subtreeContains(const WorkflowNode* root, 
@@ -12,8 +11,8 @@ namespace {
 			if (subtreeContains(root->child(i), target)) {
 				return true;
 			}
-			return false;
 		}
+		return false;
 	}
 }
 
@@ -27,23 +26,21 @@ CompositeNode :: ~CompositeNode() {
 
 void CompositeNode::add(WorkflowNode* node) {
 	if(!node) throw std::invalid_argument("cannot add a null node");
-	if (node==this || contains(node)) throw
+	if (subtreeContains(this, node)) throw
 		std::invalid_argument("node is already in this workflow");
-	if (const auto* comp = dynamic_cast<const CompositeNode*>(node))
-		if (comp->contains(this)) throw 
-			std::invalid_argument ("adding this node creates a cycle");
+	if (subtreeContains(node, this)) throw 
+		std::invalid_argument ("adding this node creates a cycle");
 	children_.push_back(node);
+	if (subject_) node->bind(subject_);
 }
 
-void CompositeNode::remove(WorkflowNode* node {
+void CompositeNode::remove(WorkflowNode* node) {
 	auto it = std::find(children_.begin(), children_.end(), node);
 	if (it == children_.end()) throw std::invalid_argument( 
 			"node is not a direct child");
 	children_.erase(it);
 	delete node;
 }
-const std::vector<std::shared_ptr<WorkflowNode>>& CompositeNode::getChildren()
-	const {return children_;}
 
 bool CompositeNode::isComplete() const {
 	if (children_.empty()) return false;
