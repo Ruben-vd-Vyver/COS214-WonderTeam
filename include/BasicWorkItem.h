@@ -8,18 +8,15 @@
 #include "WorkItemState.h"
 
 class Participant;
-class Task;
-
+class WorkflowSubject;
 class BasicWorkItem : public WorkItem
 {
-    friend class WorkItemState;
-
 private:
     std::shared_ptr<const Task> task_;
-    std::map<std::string, std::string> fields_;
+    std::map<std::string, std::string> payload_;
     std::unique_ptr<WorkItemState> state_;
     Participant *assignee_;
-    bool activated_;
+    WorkflowSubject *subject_;
     static const Task &requireSpec(const std::shared_ptr<const Task> &spec);
 
 protected:
@@ -27,23 +24,34 @@ protected:
 
 public:
     BasicWorkItem(std::string id, std::shared_ptr<const Task> spec);
-    bool assign(Participant *p) override;
-    bool start() override;
-    bool complete() override;
-    bool requestApproval() override;
-    bool reject(const std::string &reason) override;
-    bool escalate() override;
+    ~BasicWorkItem();
+
+    void assign(Participant *p) override;
+    void start() override;
+    void complete() override;
+    void reject(const std::string &reason) override;
+    void escalate() override;
+    void approve() override;
+
     void activate() override;
     bool isComplete() const override;
-    bool hasFailed() const override;
-    WorkflowNode *clone() const override;
-    void setState(WorkItemState *s);
-    std::string getStateName() const override;
+    void bind(WorkflowSubject *s) override;
+    BasicWorkItem *clone() const override;
+
+    bool isActive() const override;
     const Task &getTask() const override;
-    Participant *getAssignee() const;
-    void setField(const std::string &key, const std::string &value);
-    std::string getField(const std::string &key) const;
-    void print(int indent = 0) const override;
+    std::string getRequiredRole() const override;
+    std::string getStateName() const override;
+    Participant *getAssignee() const override;
+    void setField(const std::string &key, const std::string &value) override;
+    std::string getField(const std::string &key) const override;
+
+    void setState(WorkItemState *s);
+    void setAssignee(Participant *p);
+    void advanceTo(WorkItemState *next, const std::string &trigger);
+
+    WorkItemMemento *createMemento() const override;
+    void restore(const WorkItemMemento &m) override;
 };
 
-#endif
+#endif // BASICWORKITEM_H
