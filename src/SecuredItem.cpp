@@ -13,7 +13,7 @@ bool SecuredItem::permits(const Participant* p) const {
 }
 
 void SecuredItem::assign(Participant* p) {
-    	if (!permits(p)) throw std::runtime_error
+    	if (p && !permits(p)) throw std::runtime_error
 		("'" + name_ + "' is secured: role '" + (p ? p->getRole() :
 							 "none") +
 		 "' not permitted");
