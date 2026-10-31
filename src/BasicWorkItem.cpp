@@ -5,6 +5,7 @@
 #include "WorkflowSubject.h"
 #include "WorkflowEvent.h"
 #include <stdexcept>
+#include <utility>
 
 const Task &BasicWorkItem::requireSpec(const std::shared_ptr<const Task> &spec)
 {
@@ -78,18 +79,21 @@ BasicWorkItem *BasicWorkItem::clone() const
     return copy;
 }
 
-WorkItemMemento *BasicWorkItem::createMemento() const
+std::unique_ptr<WorkItemMemento> BasicWorkItem::createMemento() const
 {
-    return new WorkItemMemento(state_->clone(), assignee_, payload_);
+    return std::unique_ptr<WorkItemMemento>(
+        new WorkItemMemento(state_->clone(), assignee_, payload_));
 }
 
 void BasicWorkItem::restore(const WorkItemMemento &m)
 {
     if (!m.savedState_)
         throw std::invalid_argument("BasicWorkItem::restore: memento holds no state");
-    state_.reset(m.savedState_->clone());
+    std::unique_ptr<WorkItemState> restored(m.savedState_->clone());
+    state_ = std::move(restored);
     assignee_ = m.assignee_;
     payload_ = m.payload_;
+    publish("state.restored");
 }
 
 void BasicWorkItem::publish(const std::string &type)

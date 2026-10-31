@@ -50,7 +50,7 @@ public:
     void setAssignee(Participant *p);
     void advanceTo(WorkItemState *next, const std::string &trigger);
 
-    WorkItemMemento *createMemento() const override;
+    std::unique_ptr<WorkItemMemento> createMemento() const override;
     void restore(const WorkItemMemento &m) override;
 };
 

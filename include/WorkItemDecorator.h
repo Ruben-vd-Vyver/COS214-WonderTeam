@@ -1,4 +1,7 @@
-#include "WorkItem"
+#ifndef WORKITEMDECORATOR_H
+#define WORKITEMDECORATOR_H
+
+#include "WorkItem.h"
 
 class WorkItemDecorator : public WorkItem {
 protected:
@@ -23,6 +26,8 @@ public:
     	void setField(const std::string& k, const std::string& value) override;
     	std::string getField(const std::string& key) const override;
     	void bind(WorkflowSubject* s) override;
-    	WorkItemMemento* createMemento() const override;
+    	std::unique_ptr<WorkItemMemento> createMemento() const override;
     	void restore(const WorkItemMemento& m) override;
 };
+
+#endif
