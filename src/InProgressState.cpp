@@ -1,28 +1,21 @@
 #include "InProgressState.h"
 #include "CompletedState.h"
-#include "AwaitingApprovalState.h"
 #include "RejectedState.h"
 #include "EscalatedState.h"
-#include "Task.h"
+#include "BasicWorkItem.h"
 
 std::string InProgressState::getName() const { return "InProgress"; }
-bool InProgressState::complete(Task &t)
+WorkItemState *InProgressState::clone() const { return new InProgressState(); }
+bool InProgressState::isActive() const { return true; }
+void InProgressState::complete(BasicWorkItem &item)
 {
-    changeState(t, new CompletedState());
-    return true;
+    item.advanceTo(new CompletedState(), "complete");
 }
-bool InProgressState::requestApproval(Task &t)
+void InProgressState::reject(BasicWorkItem &item, const std::string &)
 {
-    changeState(t, new AwaitingApprovalState());
-    return true;
+    item.setState(new RejectedState());
 }
-bool InProgressState::reject(Task &t, const std::string &)
+void InProgressState::escalate(BasicWorkItem &item)
 {
-    changeState(t, new RejectedState());
-    return true;
-}
-bool InProgressState::escalate(Task &t)
-{
-    changeState(t, new EscalatedState());
-    return true;
+    item.setState(new EscalatedState());
 }

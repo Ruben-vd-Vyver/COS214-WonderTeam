@@ -1,7 +1,18 @@
 #include "Task.h"
 #include "PendingState.h"
 
-Task::Task(std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()), description_(std::move(description)) {}
+Task::Task(std::string role, std::string id, std::string name, std::string description) : WorkflowNode(std::move(id), std::move(name)), state_(new PendingState()),requiredRole(role), description_(std::move(description)) {}
+
+// [Prototype]
+Task::Task(const Task &other)
+    : WorkflowNode(other),
+      state_(other.state_->clone()),
+      activated_(other.activated_),
+      assignee_(other.assignee_),
+      description_(other.description_) {}
+
+// [Prototype]
+Task *Task::clone() const { return new Task(*this); }
 
 bool Task::assign(Participant *p) { return state_->assign(*this, p); }
 
@@ -39,3 +50,4 @@ void Task::print(int indent) const
 {
     std::cout << std::string(indent, ' ') << "[Task] " << describe() << "\n";
 }
+

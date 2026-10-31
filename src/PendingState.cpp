@@ -1,10 +1,10 @@
 #include "PendingState.h"
 #include "AvailableState.h"
-#include "Task.h"
+#include "BasicWorkItem.h"
 
 std::string PendingState::getName() const { return "Pending"; }
-void PendingState::activate(Task &t)
+WorkItemState *PendingState::clone() const { return new PendingState(); }
+void PendingState::activate(BasicWorkItem &item)
 {
-    markActivated(t);
-    changeState(t, new AvailableState());
+    item.setState(new AvailableState());
 }

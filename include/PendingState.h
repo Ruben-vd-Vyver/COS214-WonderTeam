@@ -1,13 +1,14 @@
 #ifndef PENDINGSTATE_H
 #define PENDINGSTATE_H
 
-#include "TaskState.h"
+#include "WorkItemState.h"
 
-class PendingState : public TaskState
+class PendingState : public WorkItemState
 {
 public:
     std::string getName() const override;
-    void activate(Task &t) override;
+    WorkItemState *clone() const override;
+    void activate(BasicWorkItem &item) override;
 };
 
 #endif // PENDINGSTATE_H

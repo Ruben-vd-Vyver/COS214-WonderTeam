@@ -1,13 +1,16 @@
 #ifndef AVAILABLESTATE_H
 #define AVAILABLESTATE_H
 
-#include "TaskState.h"
+#include "WorkItemState.h"
 
-class AvailableState : public TaskState
+class AvailableState : public WorkItemState
 {
 public:
     std::string getName() const override;
-    bool assign(Task &t, Participant *p) override;
+    WorkItemState *clone() const override;
+    bool isActive() const override;
+    void assign(BasicWorkItem &item, Participant *p) override;
+    void escalate(BasicWorkItem &item) override;
 };
 
 #endif // AVAILABLESTATE_H

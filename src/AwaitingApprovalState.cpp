@@ -1,22 +1,26 @@
 #include "AwaitingApprovalState.h"
-#include "CompletedState.h"
 #include "RejectedState.h"
-#include "EscalatedState.h"
-#include "Task.h"
+#include "BasicWorkItem.h"
+#include <stdexcept>
 
+AwaitingApprovalState::AwaitingApprovalState(WorkItemState *onApproved, const std::string &trigger) : onApproved_(onApproved), trigger_(trigger)
+{
+    if (!onApproved_)
+        throw std::invalid_argument("AwaitingApprovalState needs a state to move to once approved");
+}
+AwaitingApprovalState::~AwaitingApprovalState() {}
 std::string AwaitingApprovalState::getName() const { return "AwaitingApproval"; }
-bool AwaitingApprovalState::complete(Task &t)
+WorkItemState *AwaitingApprovalState::clone() const
 {
-    changeState(t, new CompletedState());
-    return true;
+    return new AwaitingApprovalState(onApproved_->clone(), trigger_);
 }
-bool AwaitingApprovalState::reject(Task &t, const std::string &)
+bool AwaitingApprovalState::isActive() const { return true; }
+void AwaitingApprovalState::approve(BasicWorkItem &item)
 {
-    changeState(t, new RejectedState());
-    return true;
+    WorkItemState *next = onApproved_.release();
+    item.setState(next);
 }
-bool AwaitingApprovalState::escalate(Task &t)
+void AwaitingApprovalState::reject(BasicWorkItem &item, const std::string &)
 {
-    changeState(t, new EscalatedState());
-    return true;
+    item.setState(new RejectedState());
 }

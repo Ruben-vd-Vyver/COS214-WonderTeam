@@ -1,15 +1,23 @@
 #ifndef AWAITINGAPPROVALSTATE_H
 #define AWAITINGAPPROVALSTATE_H
 
-#include "TaskState.h"
+#include <memory>
+#include "WorkItemState.h"
 
-class AwaitingApprovalState : public TaskState
+class AwaitingApprovalState : public WorkItemState
 {
+private:
+    std::unique_ptr<WorkItemState> onApproved_;
+    std::string trigger_;
+
 public:
+    AwaitingApprovalState(WorkItemState *onApproved, const std::string &trigger);
+    ~AwaitingApprovalState();
     std::string getName() const override;
-    bool complete(Task &t) override;
-    bool reject(Task &t, const std::string &reason) override;
-    bool escalate(Task &t) override;
+    WorkItemState *clone() const override;
+    bool isActive() const override;
+    void approve(BasicWorkItem &item) override;
+    void reject(BasicWorkItem &item, const std::string &reason) override;
 };
 
 #endif // AWAITINGAPPROVALSTATE_H

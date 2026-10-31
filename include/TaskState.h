@@ -6,6 +6,8 @@
 class Task;
 class Participant;
 // State pattern - abstract State
+// Prototype pattern - each state can copy itself, 
+// so Task::clone() can copy whatever state the task is currently in without a switch.
 
 class TaskState
 {
@@ -24,6 +26,9 @@ public:
 
     virtual bool isComplete() const; // true only in CompletedState
     virtual bool hasFailed() const;  // true only in RejectedState
+
+    // [Prototype]
+    virtual TaskState *clone() const = 0;
 
 protected:
     static void changeState(Task &t, TaskState *next); // will use unique ptr

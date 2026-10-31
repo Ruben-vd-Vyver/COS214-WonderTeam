@@ -3,7 +3,7 @@
 
 int Participant::ParticipantCount_ = 0;
 
-// Initialiser list follows the member declaration order (name_, roles_,authorityLevel_) to avoid -Wreorder warnings.
+// Initialiser list follows the member declaration order (name_, roles_,authorityLevel_) 
 Participant::Participant(std::string name, int authorityLevel, std::vector<std::string> roles)
  : name_(std::move(name)), roles_(std::move(roles)), authorityLevel_(authorityLevel) {
     ParticipantCount_++;
@@ -47,4 +47,12 @@ std::string Participant::describe(){
     }
 
     return description.str();
+}
+
+void Participant::incrementWorkload() {
+    workload_++;
+}
+
+std::string Participant::getName() const {
+    return name_;
 }

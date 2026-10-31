@@ -1,23 +1,23 @@
 #include "AssignedState.h"
 #include "InProgressState.h"
 #include "EscalatedState.h"
-#include "Task.h"
+#include "BasicWorkItem.h"
+#include <stdexcept>
 
 std::string AssignedState::getName() const { return "Assigned"; }
-bool AssignedState::assign(Task &t, Participant *p)
+WorkItemState *AssignedState::clone() const { return new AssignedState(); }
+bool AssignedState::isActive() const { return true; }
+void AssignedState::assign(BasicWorkItem &item, Participant *p)
 {
     if (!p)
-        return false;
-    setAssignee(t, p);
-    return true;
+        throw std::invalid_argument("AssignedState::assign needs a participant");
+    item.setAssignee(p);
 }
-bool AssignedState::start(Task &t)
+void AssignedState::start(BasicWorkItem &item)
 {
-    changeState(t, new InProgressState());
-    return true;
+    item.setState(new InProgressState());
 }
-bool AssignedState::escalate(Task &t)
+void AssignedState::escalate(BasicWorkItem &item)
 {
-    changeState(t, new EscalatedState());
-    return true;
+    item.setState(new EscalatedState());
 }

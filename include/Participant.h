@@ -5,7 +5,11 @@
 #include <vector>
 #include <algorithm>
 
-class Task; // forward declaration (Task.h also refers to Participant)
+class Task; //forward declaration (Task.h also refers to Participant)
+
+    // Participants act as "Employees" or "Users" in the workload. 
+    // They can be assigned work, and execute commands and (depending on authority) are involved in the approval process. 
+
 
 class Participant {
     private:
@@ -13,7 +17,7 @@ class Participant {
         std::vector<std::string> roles_;
         int authorityLevel_;
         std::vector<Task*> assignments_;
-        int workload_ = 0; // How much task/work is currently assigned to this participant
+        int workload_ = 0; //how much task/work is currently assigned to this participant
         static int ParticipantCount_;
     public:
         Participant(std::string name, int authorityLevel, std::vector<std::string> roles);
@@ -24,6 +28,8 @@ class Participant {
         int getWorkload() const;
         int getAuthority() const;
         std::string describe();
+        std::string getName() const;
+        void incrementWorkload();
 
 };
 

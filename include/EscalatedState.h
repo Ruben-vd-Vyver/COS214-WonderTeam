@@ -1,13 +1,15 @@
 #ifndef ESCALATEDSTATE_H
 #define ESCALATEDSTATE_H
 
-#include "TaskState.h"
+#include "WorkItemState.h"
 
-class EscalatedState : public TaskState
+class EscalatedState : public WorkItemState
 {
 public:
     std::string getName() const override;
-    bool assign(Task &t, Participant *p) override;
+    WorkItemState *clone() const override;
+    bool isActive() const override;
+    void assign(BasicWorkItem &item, Participant *p) override;
 };
 
 #endif // ESCALATEDSTATE_H

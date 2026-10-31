@@ -1,15 +1,17 @@
 #ifndef ASSIGNEDSTATE_H
 #define ASSIGNEDSTATE_H
 
-#include "TaskState.h"
+#include "WorkItemState.h"
 
-class AssignedState : public TaskState
+class AssignedState : public WorkItemState
 {
 public:
     std::string getName() const override;
-    bool assign(Task &t, Participant *p) override; 
-    bool start(Task &t) override;                  
-    bool escalate(Task &t) override;               
+    WorkItemState *clone() const override;
+    bool isActive() const override;
+    void assign(BasicWorkItem &item, Participant *p) override;
+    void start(BasicWorkItem &item) override;
+    void escalate(BasicWorkItem &item) override;
 };
 
-#endif
+#endif // ASSIGNEDSTATE_H

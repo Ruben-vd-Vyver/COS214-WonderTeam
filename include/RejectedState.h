@@ -1,13 +1,13 @@
 #ifndef REJECTEDSTATE_H
 #define REJECTEDSTATE_H
 
-#include "TaskState.h"
+#include "WorkItemState.h"
 
-class RejectedState : public TaskState
+class RejectedState : public WorkItemState
 {
 public:
     std::string getName() const override;
-    bool hasFailed() const override;
+    WorkItemState *clone() const override;
 };
 
 #endif // REJECTEDSTATE_H

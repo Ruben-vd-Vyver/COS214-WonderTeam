@@ -1,35 +1,29 @@
 #include "WorkflowNode.h"
-#include "NullIterator.h" // [Iterator]
 
-WorkflowNode::WorkflowNode(std::string id, std::string name)
-	: id_(std::move(id)), name_(std::move(name)) {}
-
-const std::string& WorkflowNode::getId() const {return id_;}
-
-const std::string& WorkflowNode::getName() const {return name_;}
-
-void WorkflowNode::add(std::shared_ptr<WorkflowNode>) {
-	throw std::logic_error(
-			"'"+name_+"' is a leaf and cannot have children");
+namespace {
+	int counter = 0;
 }
 
-bool WorkflowNode::remove(const std::string&) {
-	throw std::logic_error(
-			"'"+name_+"' is a leaf and has no children to remove");
+WorkflowNode::WorkflowNode(std::string id, std::string name) : 
+	id_(std::move(id)), name_(std::move(name)) {}
+
+
+const std::string& WorkflowNode::getId() const {
+	return id_;
 }
 
-std::shared_ptr<WorkflowNode> WorkflowNode::getChild(const std::string&) 
-	const {return nullptr;}
+std::string WorkflowNode::getName() const {
+	return name_;
+}
 
-const std::vector<std::shared_ptr<WorkflowNode>>& WorkflowNode::getChildren() 
-	const {
-		static const std::vector<std::shared_ptr<WorkflowNode>> none;
-		return none;
-	}
+int WorkflowNode::childCount() const {
+	return 0;
+}
 
-bool WorkflowNode::hasFailed() const { return false;}
+WorkflowNode* WorkflowNode::child(int) const {
+	throw std::out_of_range("node has no such child");
+}
 
-// [Iterator] leaf behaviour: nothing below a leaf
-WorkIterator* WorkflowNode::createIterator() {
-	return new NullIterator();
+WorkItem* WorkflowNode::asWorkItem() {
+	return nullptr;
 }

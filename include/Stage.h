@@ -1,6 +1,3 @@
-#ifndef STAGE_H
-#define STAGE_H
-
 #include "CompositeNode.h"
 
 class Stage : public CompositeNode {
@@ -9,9 +6,8 @@ class Stage : public CompositeNode {
 	protected:
 		std::string label() const override;
 	public:
-		Stage(std::string id, std::string name, bool parallel = false);
+		Stage(std::string id, std::string name, bool parallel);
 		bool isParallel() const;
+		WorkflowNode* clone() const override;
 		void activate() override;
 };
-
-#endif // STAGE_H
