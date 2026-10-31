@@ -1,5 +1,9 @@
+#ifndef WORKITEM_H
+#define WORKITEM_H
+
+#include <memory>
 #include <string>
-#include <WorkflowNode.h>
+#include "WorkflowNode.h"
 #include "WorkItemMemento.h"
 #include "Task.h"
 
@@ -23,7 +27,7 @@ class WorkItem : public WorkflowNode {
 		virtual void setField(const std::string& key,
 				const std::string& value) =0;
 		virtual std::string getField(const std::string& key) const=0;
-		virtual WorkItemMemento createMemento() const=0;
+		virtual std::unique_ptr<WorkItemMemento> createMemento() const=0;
 		virtual void restore(const WorkItemMemento& m)=0;
 		WorkItem* clone() const override =0;
 
@@ -32,3 +36,5 @@ class WorkItem : public WorkflowNode {
 		WorkflowIterator* createIterator() override; //NUllIterator
 		WorkItem* asWorkItem() override;
 };
+
+#endif

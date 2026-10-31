@@ -79,7 +79,7 @@ void WorkItemDecorator::bind(WorkflowSubject* s) {
 	inner_->bind(s);
 }
 
-WorkItemMemento* WorkItemDecorator::createMemento() const {
+std::unique_ptr<WorkItemMemento> WorkItemDecorator::createMemento() const {
 	return inner_->createMemento();
 }
 

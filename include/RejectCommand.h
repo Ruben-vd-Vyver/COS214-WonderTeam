@@ -2,11 +2,9 @@
 #define REJECT_COMMAND_H
 
 #include "WorkItemCommand.h"
-#include "WorkItemMemento.h"
 
 class RejectCommand : public WorkItemCommand {
     private:
-        WorkItemMemento previousState_;
         std::string reason_;
     public:
         RejectCommand(WorkItem* workItem, std::string reason);

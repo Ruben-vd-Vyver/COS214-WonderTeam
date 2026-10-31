@@ -1,3 +1,6 @@
+#ifndef WORKFLOWNODE_H
+#define WORKFLOWNODE_H
+
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -31,3 +34,5 @@ class WorkflowNode {
 		virtual WorkflowNode* child(int i) const;
 		virtual WorkItem* asWorkItem();
 };
+
+#endif

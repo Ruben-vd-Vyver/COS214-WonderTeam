@@ -1,7 +1,9 @@
 #ifndef WORKITEMCOMMAND_H
 #define WORKITEMCOMMAND_H
 
+#include <memory>
 #include "WorkItem.h"
+#include "WorkItemMemento.h"
 
 class Participant;
 
@@ -14,6 +16,10 @@ class WorkItemCommand {
         bool hasExecuted_ = false;
         WorkItem* workItem_;
         Participant* participant_;
+
+        std::unique_ptr<WorkItemMemento> memento_;
+        void saveSnapshot();
+        bool restoreSnapshot();
     public: 
         WorkItemCommand(WorkItem* workItem, Participant* participant);
         virtual ~WorkItemCommand() = default;

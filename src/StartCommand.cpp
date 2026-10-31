@@ -8,7 +8,7 @@ bool StartCommand::execute() {
     if (hasExecuted_)
         return false;
 
-    previousState_ = workItem_->createMemento();
+    saveSnapshot();
     workItem_->start();
     hasExecuted_ = true;
     return true;
@@ -18,7 +18,8 @@ bool StartCommand::undo() {
     if (!hasExecuted_)
         return false;
 
-    workItem_->restore(previousState_);
+    if (!restoreSnapshot())
+        return false;
     hasExecuted_ = false;
     return true;
 }

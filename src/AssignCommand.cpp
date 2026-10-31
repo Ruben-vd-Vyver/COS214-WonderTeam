@@ -14,13 +14,15 @@ bool AssignCommand::execute(){
     if (hasExecuted_)
         return false;
 
-    previousAssignee_ = workItem_->getAssignee();
-    if (previousAssignee_ == participant_)
+    if (workItem_->getAssignee() == participant_)
         return false;
 
+    saveSnapshot();
     workItem_->assign(participant_);
-    if (workItem_->getAssignee() != participant_)
+    if (workItem_->getAssignee() != participant_) {
+        restoreSnapshot();
         return false;
+    }
 
     hasExecuted_ = true;
     std::cout << "Command executed successfully\n";
@@ -31,8 +33,7 @@ bool AssignCommand::undo(){
     if (!hasExecuted_ || workItem_->getAssignee() != participant_)
         return false;
 
-    workItem_->assign(previousAssignee_);
-    if (workItem_->getAssignee() != previousAssignee_)
+    if (!restoreSnapshot())
         return false;
 
     hasExecuted_ = false;

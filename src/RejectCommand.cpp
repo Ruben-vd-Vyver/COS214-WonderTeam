@@ -9,7 +9,7 @@ bool RejectCommand::execute() {
     if (hasExecuted_)
         return false;
 
-    previousState_ = workItem_->createMemento();
+    saveSnapshot();
     workItem_->reject(reason_);
     hasExecuted_ = true;
     return true;
@@ -19,7 +19,8 @@ bool RejectCommand::undo() {
     if (!hasExecuted_)
         return false;
 
-    workItem_->restore(previousState_);
+    if (!restoreSnapshot())
+        return false;
     hasExecuted_ = false;
     return true;
 }
