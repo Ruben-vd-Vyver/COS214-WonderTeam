@@ -9,12 +9,12 @@ int SubProcess::getSourceVersion() const {
 }
 
 WorkflowNode* SubProcess::clone() const {
-	SubProcess* copy = new SubProcess(name_, sourceVersion_);
+	SubProcess* copy = new SubProcess(id_, name_, sourceVersion_);
 	cloneChildrenInto(*copy);
 	return copy;
 }
 
 void SubProcess::activate() {
 	for (auto* c : children_)
-		if(!c->isComplete()) c->activate():
+		if(!c->isComplete()) c->activate();
 }
