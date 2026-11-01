@@ -29,7 +29,8 @@ public:
     const std::vector<std::shared_ptr<Task>> &getTasks() const;
     void addChain(ApprovalHandler *h);
     const std::vector<ApprovalHandler *> &getChains() const;
-    WorkflowInstance *createInstance() const;
+    
+    WorkflowInstance *createInstance(const std::string &instanceId) const;// Prototype: every instance gets its own clone of the root tree
 };
 
 #endif
