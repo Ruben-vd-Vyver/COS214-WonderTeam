@@ -1,61 +1,140 @@
 #ifndef WORKFLOW_COMMANDS_H
 #define WORKFLOW_COMMANDS_H
 
-#include <vector>
+#include <map>
 #include <string>
-#include <iostream>
+#include <vector>
 #include "WorkflowBuilder.h"
 
-// Abstract Base Class Command Pattern
+/**
+ * @brief Represents the approval handler abstraction in the TIVIDY workflow system.
+ */
+class ApprovalHandler;
+
+/**
+ * @brief Represents the director context abstraction in the TIVIDY workflow system.
+ */
+struct DirectorContext
+{
+    std::map<std::string, ApprovalHandler *> chains;
+    bool started;
+    bool finished;
+    int openStages;
+
+    /**
+     * @brief Constructs an object of this type.
+     */
+    DirectorContext() : started(false), finished(false), openStages(0) {}
+};
+
+/**
+ * @brief Represents the command abstraction in the TIVIDY workflow system.
+ */
 class Command
 {
 public:
-    virtual ~Command() = default;
-    virtual bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) = 0;
+    /**
+     * @brief Destroys this object and releases owned resources.
+     */
+    virtual ~Command() {}
+
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    virtual void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) = 0;
 };
 
-// Concrete Command
+/**
+ * @brief Represents the workflow command abstraction in the TIVIDY workflow system.
+ */
+class WorkflowCommand : public Command
+{
+public:
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
+/**
+ * @brief Represents the stage command abstraction in the TIVIDY workflow system.
+ */
 class StageCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) override
-    {
-        if (args.size() < 2)
-        {
-            std::cerr << "Error: Usage is 'stage | <name> [| parallel|sequential]'\n";
-            return false;
-        }
-        bool isParallel = (args.size() >= 3 && args[2] == "parallel");
-        builder.beginStage(args[1], isParallel);
-        return true;
-    }
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
-// Concrete Command
+/**
+ * @brief Represents the end command abstraction in the TIVIDY workflow system.
+ */
+class EndCommand : public Command
+{
+public:
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
+/**
+ * @brief Represents the task command abstraction in the TIVIDY workflow system.
+ */
 class TaskCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) override
-    {
-        if (args.size() < 3)
-        {
-            std::cerr << "Error: Usage is 'task | <name> | <role>'\n";
-            return false;
-        }
-        builder.addTask(args[1], args[2]);
-        return true;
-    }
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
-// Concrete Command: closes the most recently opened stage
-class EndStageCommand : public Command
+/**
+ * @brief Represents the approve line command abstraction in the TIVIDY workflow system.
+ */
+class ApproveLineCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &) override
-    {
-        builder.endStage();
-        return true;
-    }
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
+/**
+ * @brief Represents the done command abstraction in the TIVIDY workflow system.
+ */
+class DoneCommand : public Command
+{
+public:
+    /**
+     * @brief Performs the execute operation.
+     * @param builder Value or object supplied by the caller.
+     * @param args Value or object supplied by the caller.
+     * @param context Value or object supplied by the caller.
+     */
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
 #endif // WORKFLOW_COMMANDS_H
