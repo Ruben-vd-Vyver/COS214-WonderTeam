@@ -10,22 +10,71 @@ Mr. Ruben van der Vyver - u25007786
 ```
 TIVIDY is a generic workflow management system used to define, execute and monitor workflows. It manages work items, participants, dependencies, routing, approvals, failures and progress. Workflow definitions describe how a process should operate, while running instances track the progress and data of a specific process. TIVIDY should remain generic and general, without becoming too focused on a specific field/organisation. 
 
-## Docker
+# TIVIDY
 
-```sh
+## Dependencies
+
+**Local build**
+- C++11 compatible compiler (G++)
+- GNU Make
+- ncurses development library
+
+Install on Ubuntu/Debian:
+
+```bash
+sudo apt update
+sudo apt install build-essential make libncurses-dev
+```
+
+**Docker**
+- Docker Engine or Docker Desktop
+
+## Build
+
+### Using Make
+
+Build from the project root:
+
+```bash
+make
+```
+
+Run the default demo:
+
+```bash
+./main
+```
+
+Run with a workflow file:
+
+```bash
+./main test.txt
+```
+
+Clean build files:
+
+```bash
+make clean
+```
+
+### Using Docker
+
+Build the image:
+
+```bash
 docker build -t tividy .
 ```
 
-Run the bundled default demo interactively:
+Run the default demo:
 
-```sh
+```bash
 docker run --rm -it tividy
 ```
 
-Run scenario:
+Run with a custom workflow file:
 
-```sh
-docker run --rm -it tividy /app/workflows/scenario_name.txt
+```bash
+docker run --rm -it tividy /app/workflows/workflow_file.txt
 ```
 
 ### Links
