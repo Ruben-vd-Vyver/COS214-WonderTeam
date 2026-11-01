@@ -7,16 +7,16 @@ SecuredItem::SecuredItem(WorkItem* inner, std::vector<std::string> permittedRole
     : WorkItemDecorator(inner), permittedRoles_(std::move(permittedRoles)) {}
 
 bool SecuredItem::permits(const Participant* p) const {
-    	return p && std::find(permittedRoles_.begin(), 
-			permittedRoles_.end(), 
-			p->getRole()) != permittedRoles_.end();
+	if (!p) return false;
+	for (std::size_t i = 0; i < permittedRoles_.size(); ++i)
+		if (p->hasRole(permittedRoles_[i])) return true;
+	return false;
 }
 
 void SecuredItem::assign(Participant* p) {
     	if (p && !permits(p)) throw std::runtime_error
-		("'" + name_ + "' is secured: role '" + (p ? p->getRole() :
-							 "none") +
-		 "' not permitted");
+		("'" + name_ + "' is secured: '" + p->getName() +
+		 "' has no permitted role");
     WorkItemDecorator::assign(p);
 }
 

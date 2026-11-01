@@ -12,12 +12,13 @@ class DefinitionBuilder : public WorkflowBuilder
 {
 private:
     std::unique_ptr<WorkflowDefinition> product_;
-    std::stack<std::shared_ptr<CompositeNode>> openStages_;
+    std::stack<CompositeNode*> openStages_; //bottom = root (owned here until getResult), others owned by their parent
     std::shared_ptr<Task> lastTask_;
     int stageCount_;
     int itemCount_;
     void requireProduct() const;
     CompositeNode &current() const;
+    void discardRoot();
 
 public:
     DefinitionBuilder();

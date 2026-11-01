@@ -10,7 +10,19 @@
 DefinitionBuilder::DefinitionBuilder() : stageCount_(0), itemCount_(0) {}
 
 // Releases resources owned by the builder
-DefinitionBuilder::~DefinitionBuilder() {}
+DefinitionBuilder::~DefinitionBuilder() { discardRoot(); }
+
+// Deletes an unfinished tree (only the root is owned here; it deletes its children)
+void DefinitionBuilder::discardRoot()
+{
+    CompositeNode *root = nullptr;
+    while (!openStages_.empty())
+    {
+        root = openStages_.top();
+        openStages_.pop();
+    }
+    delete root;
+}
 
 // Ensures the builder has an active workflow product
 void DefinitionBuilder::requireProduct() const
@@ -29,22 +41,20 @@ CompositeNode &DefinitionBuilder::current() const
 void DefinitionBuilder::reset(const std::string &name, int version)
 {
     product_.reset(new WorkflowDefinition(name, version));
-    while (!openStages_.empty())
-        openStages_.pop();
+    discardRoot();
     lastTask_.reset();
     stageCount_ = 0;
     itemCount_ = 0;
 
-    std::shared_ptr<CompositeNode> root(new Stage("stage-" + std::to_string(stageCount_++), name, false));
-    openStages_.push(root);
+    openStages_.push(new Stage("stage-" + std::to_string(stageCount_++), name, false));
 }
 
 // Opens a new stage and adds it to the current stage hierarchy
 void DefinitionBuilder::beginStage(const std::string &name, bool parallel)
 {
     requireProduct();
-    std::shared_ptr<CompositeNode> stage(new Stage("stage-" + std::to_string(stageCount_++), name, parallel));
-    current().add(stage);
+    CompositeNode *stage = new Stage("stage-" + std::to_string(stageCount_++), name, parallel);
+    current().add(stage); // parent now owns it
     openStages_.push(stage);
     lastTask_.reset();
 }
@@ -65,7 +75,7 @@ void DefinitionBuilder::addTask(const std::string &name, const std::string &role
     requireProduct();
     std::shared_ptr<Task> spec = std::make_shared<Task>(name, role);
     product_->addTask(spec);
-    current().add(std::make_shared<BasicWorkItem>("item-" + std::to_string(itemCount_++), spec));
+    current().add(new BasicWorkItem("item-" + std::to_string(itemCount_++), spec));
     lastTask_ = spec;
 }
 
@@ -75,7 +85,7 @@ void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
     requireProduct();
     if (!t)
         throw "DefinitionBuilder: addCustomItem needs an item";
-    current().add(t);
+    current().add(t->clone()); // Prototype: the stage owns its own copy
     lastTask_.reset();
 }
 
@@ -97,9 +107,8 @@ WorkflowDefinition *DefinitionBuilder::getResult()
     requireProduct();
     if (openStages_.size() != 1)
         throw "DefinitionBuilder: getResult() with a stage still open";
-    product_->setRoot(openStages_.top());
-    while (!openStages_.empty())
-        openStages_.pop();
+    product_->setRoot(std::shared_ptr<WorkflowNode>(openStages_.top()));
+    openStages_.pop();
     lastTask_.reset();
     return product_.release();
 }

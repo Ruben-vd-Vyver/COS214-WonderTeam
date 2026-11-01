@@ -1,10 +1,51 @@
 #include "WorkflowInstance.h"
 #include "WorkflowEvent.h"
-// #include "WorkItem.h"
+#include "WorkflowDefinition.h"
+#include "WorkflowNode.h"
+#include "WorkItem.h"
+#include "WorkItemCommand.h"
 
 #include <sstream>
+#include <stdexcept>
 
-WorkflowInstance::WorkflowInstance(const std::string& id) : instanceId(id) {}
+WorkflowInstance::WorkflowInstance(const WorkflowDefinition &def, WorkflowNode *root, const std::string &id)
+    : instanceId(id), root_(root)
+{
+    if (!root_)
+        throw std::invalid_argument("WorkflowInstance needs a root (a clone of the definition's tree)");
+    data["definition"] = def.getName();
+    root_->bind(this); // every work item in this copy reports its events to this instance
+}
+
+WorkflowInstance::~WorkflowInstance() {}
+
+bool WorkflowInstance::perform(WorkItemCommand *cmd)
+{
+    std::unique_ptr<WorkItemCommand> owned(cmd); // deleted here unless history keeps it
+    if (!owned)
+        return false;
+    if (!history_.run(owned.get()))
+        return false;
+    owned.release(); // history now owns it
+    return true;
+}
+
+bool WorkflowInstance::undoLast() { return history_.undo(); }
+
+WorkflowNode *WorkflowInstance::getRoot() const { return root_.get(); }
+
+WorkItem *WorkflowInstance::findItem(const std::string &id) const { return root_->find(id); }
+
+bool WorkflowInstance::isComplete() const { return root_->isComplete(); }
+
+WorkAllocator &WorkflowInstance::getAllocator() { return allocator_; }
+
+std::string WorkflowInstance::getData(const std::string &key) const
+{
+    std::string value;
+    getData(key, value);
+    return value;
+}
 
 const std::string& WorkflowInstance::getInstanceId() const {
     return instanceId;

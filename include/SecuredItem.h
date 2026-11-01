@@ -1,3 +1,6 @@
+#ifndef SECUREDITEM_H
+#define SECUREDITEM_H
+
 #include <vector>
 #include "WorkItemDecorator.h"
 
@@ -10,3 +13,5 @@ public:
     	void start() override;
     	WorkItem* clone() const override;
 };
+
+#endif
