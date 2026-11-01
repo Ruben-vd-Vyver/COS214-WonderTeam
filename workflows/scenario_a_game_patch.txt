@@ -1,0 +1,236 @@
+# ============================================================================
+# COPPER FINCH INTERACTIVE
+# STARFALL: ECHOES OF AETHER
+# THE SUNKEN CROWN CONTENT UPDATE - PATCH 2.4.0
+#
+# TIVIDY workflow script
+#
+# Studio context:
+#   Copper Finch Interactive is a mid-size game studio preparing the
+#   "The Sunken Crown" content update for Starfall: Echoes of Aether.
+#   The update adds a flooded citadel region, a new boss encounter, four
+#   quests, new environmental art, a soundtrack package and voiced dialogue.
+#
+# Roles used by this workflow (add participants with these exact role IDs):
+#   executive_producer, production_lead, concept_artist, environment_artist,
+#   character_artist, technical_artist, animator, gameplay_engineer,
+#   tools_engineer, build_engineer, audio_designer, audio_implementation_engineer,
+#   narrative_designer, narrative_editor, localisation_specialist,
+#   integration_lead, qa_lead, qa_tester, accessibility_qa_specialist,
+#   creative_director, steamworks_release_specialist,
+#   playstation_certification_specialist, nintendo_lotcheck_specialist,
+#   release_manager, live_operations_analyst, compliance_producer.
+#
+# Variation points demonstrated:
+#   - Discipline assignment: role-based / least-workload strategy.
+#   - Approval progression: production sign-off, creative sign-off and
+#     platform-specific certification checkpoints.
+#   - External systems represented as named work: Perforce Helix Core,
+#     TeamCity CI, Jira, Steamworks, PlayStation Partners and Nintendo
+#     Developer Portal / Lotcheck submission.
+#   - Rework and escalation recipes are documented below. The current DSL
+#     has no conditional edge, event subscription or automatic loop command.
+#   - PriorityItem, ValidatedItem and SecuredItem can be selected when creating
+#     runtime exception tasks with the TUI's T/B creation actions.
+#
+# This file uses the workflow, task, approve, stage, end and done commands.
+# ============================================================================
+
+workflow | Copper Finch Interactive - Starfall Echoes of Aether - The Sunken Crown Update 2.4.0 | 1
+
+# ---------------------------------------------------------------- FEATURE REQUEST AND PRODUCTION GREENLIGHT
+stage | The Sunken Crown Feature Intake and Greenlight | sequential
+    task | Register The Sunken Crown feature request in Jira project STAR | production_lead
+    task | Review player feedback and live operations data for the flooded citadel | live_operations_analyst
+    task | Estimate art engineering audio and narrative production scope | production_lead
+    task | Approve The Sunken Crown feature brief and production budget | executive_producer
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- DISCIPLINE WORKSTREAMS - FORK
+# Art, gameplay code, audio and narrative proceed independently after greenlight.
+stage | The Sunken Crown Discipline Production Fork | parallel
+
+    stage | Flooded Citadel Art Department | sequential
+        task | Establish flooded citadel visual reference board | concept_artist
+        task | Paint Sunken Crown citadel environment concepts | concept_artist
+        task | Model coral gate throne room and drowned archive assets | environment_artist
+        task | Texture wet stone barnacle and bioluminescent materials | environment_artist
+        task | Sculpt Tidewarden boss character and armour variants | character_artist
+        task | Rig Tidewarden boss and drowned sentinel animations | animator
+        task | Create caustic lighting water shaders and particle effects | technical_artist
+        task | Optimise Sunken Crown art assets for target platform memory budgets | technical_artist
+        task | Export and validate final art bundle in Perforce Helix Core | environment_artist
+    end
+
+    stage | Gameplay Engineering Department | sequential
+        task | Write gameplay technical design for Tidewarden boss encounter | gameplay_engineer
+        task | Implement flooded citadel traversal and underwater movement volumes | gameplay_engineer
+        task | Implement Tidewarden combat phases and vulnerability windows | gameplay_engineer
+        task | Implement drowned sentinel encounter scripting | gameplay_engineer
+        task | Add Sunken Crown quest progression and reward configuration | gameplay_engineer
+        task | Extend content tools for flooded citadel encounter data | tools_engineer
+        task | Add automated tests for boss phase and quest progression logic | gameplay_engineer
+        task | Review gameplay pull request and merge approved feature branch in Perforce | gameplay_engineer
+    end
+
+    stage | Sound Design and Audio Implementation Department | sequential
+        task | Define underwater ambience and Tidewarden audio direction | audio_designer
+        task | Compose Sunken Crown exploration music and boss combat score | audio_designer
+        task | Record and edit Tidewarden creature vocalisations | audio_designer
+        task | Produce water movement combat impact and environmental sound effects | audio_designer
+        task | Implement adaptive boss music states in the game audio middleware | audio_implementation_engineer
+        task | Integrate ambience and positional audio emitters into flooded citadel scenes | audio_implementation_engineer
+        task | Validate loudness loops channel layout and platform audio formats | audio_implementation_engineer
+    end
+
+    stage | Narrative and Localisation Department | sequential
+        task | Define Sunken Crown story beats and Tidewarden character motivation | narrative_designer
+        task | Write four flooded citadel quest arcs and branching dialogue | narrative_designer
+        task | Write Tidewarden boss introduction victory and defeat dialogue | narrative_designer
+        task | Edit lore continuity item descriptions and quest journal entries | narrative_editor
+        task | Prepare localisation source strings and context notes for all new dialogue | localisation_specialist
+        task | Validate subtitle timing speaker IDs and voice-over asset references | narrative_editor
+        task | Approve narrative content handoff for integration | narrative_editor
+    end
+end
+
+# ---------------------------------------------------------------- INTEGRATION AND CI BUILD - JOIN
+stage | Sunken Crown Integration and TeamCity Build | sequential
+    task | Merge approved art gameplay audio and narrative branches into release integration branch | integration_lead
+    task | Resolve Perforce Helix Core asset locks and content reference conflicts | integration_lead
+    task | Validate asset GUIDs bundle manifests and quest data references | integration_lead
+    task | Trigger TeamCity content update build pipeline | build_engineer
+    task | Monitor TeamCity compile shader cooking and asset packaging jobs | build_engineer
+    task | Inspect TeamCity build logs and archive patch candidate artifacts | build_engineer
+    task | Generate patch manifest and verify incremental download size | build_engineer
+    task | Publish candidate build and build metadata to Jira release record | integration_lead
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- QA AND BUG-TRACKER TRIAGE
+stage | The Sunken Crown Quality Assurance Campaign | sequential
+    task | Prepare patch 2.4.0 test matrix and supported platform coverage | qa_lead
+    task | Execute flooded citadel exploration and traversal test cases | qa_tester
+    task | Execute Tidewarden boss combat phase and reward regression tests | qa_tester
+    task | Verify all four Sunken Crown quest branches and completion flags | qa_tester
+    task | Validate audio mix dialogue playback subtitles and localisation strings | qa_tester
+    task | Perform memory frame-time and asset streaming performance tests | qa_tester
+    task | Verify colour contrast subtitle readability and accessibility options | accessibility_qa_specialist
+    task | Reproduce failed test cases and attach captures logs and save files to Jira | qa_tester
+    task | Assign Jira defects to the responsible art engineering audio or narrative discipline | qa_lead
+    task | Review blocker and critical defect disposition for patch 2.4.0 | qa_lead
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- PRODUCTION AND CREATIVE SIGN-OFF
+# The role-specific sign-off tasks make the requested Lead -> Producer ->
+# Creative Director sequence visible in the workflow. Each approve marker
+# invokes the application's configured "review" handler chain.
+stage | Content Quality and Creative Approval | sequential
+    task | Discipline leads confirm art code audio and narrative acceptance criteria | production_lead
+    approve | complete | review
+    task | Executive producer approves patch scope schedule and release readiness | executive_producer
+    approve | complete | review
+    task | Creative director signs off Tidewarden encounter visual identity and story presentation | creative_director
+    approve | complete | review
+    task | Compliance producer verifies third-party assets music licences and release audit package | compliance_producer
+end
+
+# ---------------------------------------------------------------- PLATFORM CERTIFICATION - PARALLEL SUBMISSIONS
+stage | Storefront and Console Platform Certification | parallel
+
+    stage | Steamworks Build Review | sequential
+        task | Validate Steamworks SDK integration overlay achievements and cloud save behaviour | steamworks_release_specialist
+        task | Verify Steam Deck controls graphics settings and compatibility metadata | steamworks_release_specialist
+        task | Prepare Steam store capsule artwork trailer content rating and patch notes | release_manager
+        task | Upload patch 2.4.0 candidate to Steamworks partner build branch | steamworks_release_specialist
+        task | Submit Steam build and store update for Valve review | steamworks_release_specialist
+        task | Review Valve certification feedback and record Steam review outcome | steamworks_release_specialist
+        approve | complete | review
+    end
+
+    stage | PlayStation Partners Certification | sequential
+        task | Validate PlayStation 5 SDK integration save data and trophy metadata | playstation_certification_specialist
+        task | Run PlayStation platform requirements checklist and TRC compliance suite | qa_lead
+        task | Verify suspend resume controller disconnect and network interruption behaviour | qa_tester
+        task | Package PlayStation submission metadata screenshots and compliance evidence | playstation_certification_specialist
+        task | Upload patch candidate through PlayStation Partners submission portal | playstation_certification_specialist
+        task | Review PlayStation certification findings and record waiver or rejection status | playstation_certification_specialist
+        approve | complete | review
+    end
+
+    stage | Nintendo Developer Portal and Lotcheck Certification | sequential
+        task | Validate Nintendo Switch SDK integration controller mapping and user data handling | nintendo_lotcheck_specialist
+        task | Run Nintendo Lotcheck requirements and platform compliance checklist | qa_lead
+        task | Verify handheld docked mode suspend resume and local user switching | qa_tester
+        task | Prepare Nintendo submission package age rating and eShop metadata | nintendo_lotcheck_specialist
+        task | Upload release candidate through Nintendo Developer Portal | nintendo_lotcheck_specialist
+        task | Review Nintendo Lotcheck feedback and record certification decision | nintendo_lotcheck_specialist
+        approve | complete | review
+    end
+end
+
+# ---------------------------------------------------------------- RELEASE AND LIVE OPERATIONS HANDOVER
+stage | The Sunken Crown Patch 2.4.0 Release | sequential
+    task | Confirm Steam PlayStation and Nintendo certification approvals are recorded | release_manager
+    task | Freeze approved patch 2.4.0 release candidate and tag source revision | integration_lead
+    task | Publish final patch notes and known issues article | release_manager
+    task | Schedule coordinated storefront release windows | executive_producer
+    task | Publish The Sunken Crown update to Steam PlayStation Store and Nintendo eShop | release_manager
+    task | Verify storefront package availability and successful player download | qa_tester
+    task | Monitor crash telemetry boss completion rates and player support volume | live_operations_analyst
+    task | Close Jira release epic and archive certification evidence | compliance_producer
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- CONDITIONAL REWORK RECIPES - NOT UNCONDITIONAL TASKS
+# The DSL has no conditional edge or automatic backward loop. Do not turn the
+# following into ordinary always-on tasks: create only the relevant task(s)
+# from the TUI when the corresponding failure event occurs.
+#
+# When QA reports a gameplay defect:
+#   Create subtask under Gameplay Engineering Department:
+#   "Fix Jira defect STAR-1842 in Tidewarden encounter logic" / gameplay_engineer
+#   Then create: "Merge gameplay QA fix and trigger TeamCity rebuild" / build_engineer
+#   Follow with: "Re-run Tidewarden encounter regression suite" / qa_tester
+#
+# When QA rejects an art asset:
+#   Create subtask under Flooded Citadel Art Department:
+#   "Replace rejected flooded citadel asset from Jira STAR-1842" / environment_artist
+#   Follow with: "Revalidate art bundle and flooded citadel scene lighting" / technical_artist
+#
+# When audio or narrative fails QA:
+#   "Correct Tidewarden adaptive music transition" / audio_implementation_engineer
+#   "Revise rejected Sunken Crown dialogue and subtitle timing" / narrative_editor
+#
+# When Steam rejects certification:
+#   "Escalate Steamworks rejection to release manager" / release_manager
+#   "Analyse Valve review findings and attach Steamworks partner feedback" / steamworks_release_specialist
+#   "Correct Steam overlay achievement cloud-save or store-package compliance issue" / gameplay_engineer
+#   "Create new TeamCity candidate and resubmit through Steamworks" / build_engineer
+#
+# When PlayStation rejects certification:
+#   "Escalate PlayStation certification rejection to release manager" / release_manager
+#   "Analyse PlayStation Partners findings and attach TRC evidence" / playstation_certification_specialist
+#   "Correct PlayStation SDK save-data trophy or suspend-resume compliance issue" / gameplay_engineer
+#   "Create new TeamCity candidate and resubmit through PlayStation Partners" / build_engineer
+#
+# When Nintendo rejects Lotcheck:
+#   "Escalate Nintendo Lotcheck rejection to release manager" / release_manager
+#   "Analyse Nintendo Developer Portal findings and attach Lotcheck evidence" / nintendo_lotcheck_specialist
+#   "Correct Nintendo Switch controller user-data or handheld-mode compliance issue" / gameplay_engineer
+#   "Create new TeamCity candidate and resubmit for Nintendo Lotcheck" / build_engineer
+#
+# Recommended TUI decorators for runtime-created work:
+#   - PriorityItem: hotfixes, certification blockers and release-critical defects.
+#   - ValidatedItem: build hash, Jira issue ID, platform evidence and QA result fields.
+#   - SecuredItem: release publishing and certification submission restricted to
+#     release_manager / platform specialist roles.
+#
+# External systems named by this workflow are represented as work items; this
+# DSL does not call their APIs. Integrations to Perforce, TeamCity, Jira,
+# Steamworks, PlayStation Partners, Nintendo Developer Portal and telemetry
+# would require separate adapters.
+
+done

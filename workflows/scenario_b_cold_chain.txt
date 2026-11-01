@@ -1,0 +1,191 @@
+# ============================================================================
+# ASTERION BIOLOGICS DISTRIBUTION
+# COLD-CHAIN VACCINE SHIPMENT: LOT ABX-2048
+# ROUTE: JOHANNESBURG DISTRIBUTION CENTRE -> CAPE TOWN VACCINE DEPOT
+#
+# TIVIDY workflow script
+#
+# Shipment context:
+#   Asterion Biologics Distribution is dispatching vaccine lot ABX-2048 from
+#   its Johannesburg GDP distribution centre to a Cape Town vaccine depot.
+#   The shipment uses a validated refrigerated vehicle, calibrated IoT logger,
+#   tamper-evident packaging and a documented chain of custody. The product's
+#   approved transport specification is recorded in the shipment paperwork;
+#   the operational example uses a monitored 2-8 C refrigerated range.
+#
+# Roles used by this workflow (add participants with these exact role IDs):
+#   pharmaceutical_order_coordinator, responsible_pharmacist,
+#   GDP_inventory_controller, GDP_warehouse_operator,
+#   cold_chain_packaging_technician, refrigerated_transport_planner,
+#   carrier_dispatch_controller, customs_clearance_specialist,
+#   GDP_compliance_manager, quality_assurance_pharmacist,
+#   cold_chain_telemetry_analyst, temperature_excursion_investigator,
+#   distribution_quality_manager, delivery_chain_of_custody_officer,
+#   route_performance_analyst, logistics_analytics_specialist.
+#
+# Variation points demonstrated:
+#   - Assignment by specialist role; least-workload can balance eligible staff.
+#   - Approval checkpoints for responsible pharmacist, QA pharmacist and
+#     GDP compliance manager.
+#   - External-system tasks for customs declaration API, carrier tracking API,
+#     calibrated IoT temperature logger and shipment analytics pipeline.
+#   - Exception recipes for temperature excursions, customs holds and missed
+#     delivery SLAs. The current DSL does not have event subscriptions or
+#     conditional loop syntax, so those work items are created when triggered.
+#   - SecuredItem, ValidatedItem and PriorityItem can be selected when creating
+#     exception tasks from the TUI (T/B).
+#
+# This file uses the workflow, task, approve, stage, end and done commands.
+# ============================================================================
+
+workflow | Asterion Biologics - Vaccine Lot ABX-2048 Johannesburg to Cape Town Cold Chain | 1
+
+# ---------------------------------------------------------------- ORDER INTAKE AND PHARMACEUTICAL AUTHORISATION
+stage | Vaccine Order Intake and Pharmacist Authorisation | sequential
+    task | Receive Cape Town depot purchase order for vaccine lot ABX-2048 | pharmaceutical_order_coordinator
+    task | Verify Cape Town depot licence delivery address and receiving hours | pharmaceutical_order_coordinator
+    task | Match ABX-2048 product code pack size and ordered vial quantity | pharmaceutical_order_coordinator
+    task | Verify prescription-only distribution and controlled stock documentation | responsible_pharmacist
+    task | Confirm product-specific refrigerated transport specification and excursion limits | responsible_pharmacist
+    task | Authorise order release for GDP stock allocation | responsible_pharmacist
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- STOCK AVAILABILITY AND BATCH RELEASE
+stage | Johannesburg GDP Inventory Check and Batch Allocation | sequential
+    task | Query Johannesburg warehouse inventory for eligible ABX-2048 units | GDP_inventory_controller
+    task | Verify ABX-2048 batch number expiry date and manufacturer release status | GDP_inventory_controller
+    task | Review batch temperature history and warehouse cold-room excursion log | quality_assurance_pharmacist
+    task | Confirm sufficient released stock for Cape Town depot order quantity | GDP_inventory_controller
+    task | Reserve ABX-2048 units and record stock movement in pharmaceutical ERP | GDP_inventory_controller
+    task | Verify batch traceability and controlled-stock audit entries | GDP_compliance_manager
+    task | Release ABX-2048 batch for outbound packing | responsible_pharmacist
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- GDP PACKING AND CARRIER ALLOCATION
+stage | Validated Cold-Chain Packing and Refrigerated Carrier Allocation | sequential
+    task | Pick released ABX-2048 vaccine cartons using warehouse batch scan | GDP_warehouse_operator
+    task | Verify carton integrity vial count and tamper-evident seals | GDP_warehouse_operator
+    task | Prepare qualified insulated shipper and conditioned refrigerant packs | cold_chain_packaging_technician
+    task | Confirm packaging configuration against ABX-2048 transport validation record | cold_chain_packaging_technician
+    task | Calibrate and activate shipment IoT temperature logger TL-ABX-2048-01 | cold_chain_packaging_technician
+    task | Pair temperature logger with Asterion shipment telemetry dashboard | cold_chain_telemetry_analyst
+    task | Pack cartons and record seal number gross weight and logger serial number | GDP_warehouse_operator
+    task | Select refrigerated carrier for Johannesburg to Cape Town route using vehicle capacity | refrigerated_transport_planner
+    task | Verify carrier vehicle refrigeration qualification and calibration certificate | carrier_dispatch_controller
+    task | Confirm driver GDP training and route handover instructions | carrier_dispatch_controller
+    task | Record carrier registration driver details and custody transfer | GDP_warehouse_operator
+    task | Approve outbound shipment release from Johannesburg distribution centre | quality_assurance_pharmacist
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- CUSTOMS AND CROSS-BORDER DOCUMENT CONTROL
+# Included as a customs API clearance checkpoint for the logistics scenario.
+stage | Customs Declaration API and Regulatory Document Clearance | sequential
+    task | Assemble commercial invoice packing list batch certificates and shipment manifest | customs_clearance_specialist
+    task | Validate consignee importer details and vaccine product tariff classification | customs_clearance_specialist
+    task | Submit ABX-2048 shipment declaration to the customs declaration API sandbox | customs_clearance_specialist
+    task | Retrieve customs declaration reference and electronic response status | customs_clearance_specialist
+    task | Reconcile customs query against invoice batch certificate and manifest | GDP_compliance_manager
+    task | Submit corrected customs supporting documents for ABX-2048 | customs_clearance_specialist
+    task | Confirm electronic customs release reference is attached to shipment record | GDP_compliance_manager
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- TRANSIT FORK: IOT, CARRIER TRACKING AND DEADLINE CONTROL
+stage | ABX-2048 In-Transit Control Tower | parallel
+
+    stage | IoT Temperature and Shipment Integrity Monitoring | sequential
+        task | Receive telemetry heartbeat from logger TL-ABX-2048-01 | cold_chain_telemetry_analyst
+        task | Validate logger calibration identity timestamp and sensor data continuity | cold_chain_telemetry_analyst
+        task | Compare live ABX-2048 temperature readings with approved 2-8 C transport range | cold_chain_telemetry_analyst
+        task | Verify door-open shock and tamper-evidence sensor events | cold_chain_telemetry_analyst
+        task | Record shipment temperature curve and custody evidence in GDP audit file | GDP_compliance_manager
+        task | Escalate temperature excursion alert to distribution quality team | temperature_excursion_investigator
+    end
+
+    stage | Refrigerated Carrier Location and Delivery SLA Monitoring | sequential
+        task | Retrieve vehicle GPS and shipment milestones from carrier tracking API | carrier_dispatch_controller
+        task | Reconcile Johannesburg departure checkpoint with carrier collection scan | carrier_dispatch_controller
+        task | Monitor N1 route progress and refrigerated vehicle arrival estimate | refrigerated_transport_planner
+        task | Calculate remaining delivery window against Cape Town depot receiving slot | route_performance_analyst
+        task | Escalate missed checkpoint or threatened delivery SLA to logistics control | carrier_dispatch_controller
+        task | Notify Cape Town depot of revised estimated arrival time | pharmaceutical_order_coordinator
+    end
+end
+
+# ---------------------------------------------------------------- CAPE TOWN DELIVERY AND CHAIN OF CUSTODY
+stage | Cape Town Depot Delivery and Receipt Verification | sequential
+    task | Confirm refrigerated vehicle arrival at Cape Town vaccine depot | delivery_chain_of_custody_officer
+    task | Verify driver identity vehicle seal number and shipment custody documents | delivery_chain_of_custody_officer
+    task | Inspect insulated shipper and tamper-evident packaging before opening | GDP_warehouse_operator
+    task | Download final temperature logger TL-ABX-2048-01 data file | cold_chain_telemetry_analyst
+    task | Review end-to-end 2-8 C temperature record and excursion status | quality_assurance_pharmacist
+    task | Count received ABX-2048 vaccine vials and reconcile batch and expiry details | GDP_warehouse_operator
+    task | Capture signed proof of delivery and receiving pharmacist acknowledgement | delivery_chain_of_custody_officer
+    task | Transfer accepted vaccine lot into qualified Cape Town cold-room storage | GDP_warehouse_operator
+    task | Close ABX-2048 custody record and archive delivery evidence | GDP_compliance_manager
+    task | Approve shipment receipt and final batch disposition | responsible_pharmacist
+    approve | complete | review
+end
+
+# ---------------------------------------------------------------- POST-SHIPMENT ROUTE AND CARRIER ANALYTICS
+stage | ABX-2048 Cold-Chain Performance and Distribution Analytics | parallel
+    task | Calculate Johannesburg to Cape Town transit duration and checkpoint delays | route_performance_analyst
+    task | Compare refrigerated carrier on-time delivery and vehicle temperature compliance | logistics_analytics_specialist
+    task | Analyse ABX-2048 temperature stability against route segments and stop durations | logistics_analytics_specialist
+    task | Calculate logger connectivity gaps and telemetry exception frequency | cold_chain_telemetry_analyst
+    task | Reconcile carrier invoice wait time and depot receiving slot performance | route_performance_analyst
+    task | Produce GDP shipment performance report for distribution quality review | GDP_compliance_manager
+    task | Archive customs API responses carrier events logger readings and proof of delivery | GDP_compliance_manager
+end
+
+# ---------------------------------------------------------------- EVENT-DRIVEN EXCEPTION RECIPES - NOT UNCONDITIONAL TASKS
+# The DSL has no event subscription, conditional branch or automatic loop.
+# Create only the relevant tasks from the TUI when a real shipment event arrives.
+#
+# TEMPERATURE EXCURSION: logger TL-ABX-2048-01 reports a reading outside the
+# approved transport range or a sustained sensor/data-integrity alarm.
+# Create an exception Stage named "ABX-2048 Temperature Excursion Investigation":
+#   "Preserve logger TL-ABX-2048-01 raw readings and calibration evidence" / cold_chain_telemetry_analyst
+#   "Investigate excursion duration route location packaging and vehicle records" / temperature_excursion_investigator
+#   "Place ABX-2048 shipment and affected cartons under documented quarantine" / GDP_warehouse_operator
+#   "Assess vaccine quality impact against manufacturer stability evidence" / quality_assurance_pharmacist
+#   "Decide whether ABX-2048 is rejected or eligible for authorised release" / responsible_pharmacist
+#   approve | complete | review
+#   "Authorise replacement vaccine allocation from released inventory" / distribution_quality_manager
+#   "Prepare replacement cold-chain shipment and new logger record" / cold_chain_packaging_technician
+#   "Notify Cape Town depot and coordinate replacement refrigerated delivery" / refrigerated_transport_planner
+# Recommended decorators: ValidatedItem for excursion duration, min/max temperature,
+# logger serial and disposition evidence; SecuredItem restricted to quality/pharmacy
+# roles; PriorityItem for urgent replacement and patient-supply risk.
+#
+# CUSTOMS HOLD: customs API returns documentary query / inspection hold.
+# Create:
+#   "Record customs API hold reference and missing document reason" / customs_clearance_specialist
+#   "Obtain corrected ABX-2048 invoice batch certificate or importer evidence" / GDP_compliance_manager
+#   "Resubmit customs declaration and verify electronic release response" / customs_clearance_specialist
+#   "Escalate unresolved customs hold to distribution compliance lead" / distribution_quality_manager
+# Recommended decorators: ValidatedItem for customs reference and evidence; PriorityItem
+# when the depot receiving slot or product stability window is threatened.
+#
+# CARRIER MISASSIGNMENT OR VEHICLE FAILURE:
+# Use U to undo the most recent command when the carrier assignment itself is the last
+# command in CommandHistory. Otherwise create a corrective task:
+#   "Reassign ABX-2048 to a qualified refrigerated carrier with available capacity" / refrigerated_transport_planner
+#   "Verify replacement vehicle refrigeration qualification and driver GDP training" / carrier_dispatch_controller
+#   "Record revised custody transfer and carrier tracking identifier" / GDP_compliance_manager
+#
+# DELIVERY SLA AT RISK:
+#   "Escalate ABX-2048 delivery window breach risk to logistics control" / carrier_dispatch_controller
+#   "Book revised Cape Town depot receiving slot" / pharmaceutical_order_coordinator
+#   "Notify receiving pharmacist of revised arrival and remaining stability window" / responsible_pharmacist
+# Recommended decorator: PriorityItem for time-critical escalation.
+#
+# EXTERNAL SYSTEMS: customs declaration API, Asterion pharmaceutical ERP,
+# carrier tracking API, IoT temperature logger TL-ABX-2048-01 and shipment
+# analytics pipeline are represented by named tasks. The workflow DSL does not
+# make network calls; live connectors require separate integration adapters.
+
+done
