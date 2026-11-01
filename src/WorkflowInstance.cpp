@@ -40,10 +40,20 @@ bool WorkflowInstance::perform(WorkItemCommand *cmd)
 {
     if (!cmd)
         return false;
-    if (!history_.run(cmd))
+    try
     {
+        if (!history_.run(cmd))
+        {
+            delete cmd;
+            return false;
+        }
+    }
+    catch (...)
+    {
+        // CommandHistory takes ownership only after execute() succeeds.
+        // If a state transition throws, do not leak the not-yet-recorded command.
         delete cmd;
-        return false;
+        throw;
     }
     return true;
 }
@@ -98,6 +108,11 @@ void WorkflowInstance::createWorkItem(WorkItem *item)
 {
     if (item)
         publishEvent("WorkItemCreated", item, "Work item created");
+}
+
+void WorkflowInstance::structureChanged(const std::string &eventType, const std::string &detail)
+{
+    publishEvent(eventType, nullptr, detail);
 }
 
 void WorkflowInstance::requestApproval(WorkItem *item)

@@ -9,8 +9,26 @@
 // Initializes counters used to generate stage and work item identifiers
 DefinitionBuilder::DefinitionBuilder() : stageCount_(0), itemCount_(0) {}
 
-// Releases resources owned by the builder
-DefinitionBuilder::~DefinitionBuilder() {}
+// Releases resources owned by the builder before a result is transferred.
+DefinitionBuilder::~DefinitionBuilder()
+{
+    discardRoot();
+}
+
+// The open-stage stack is non-owning. Its bottom element owns the complete
+// untransferred tree through CompositeNode's raw-child ownership contract.
+void DefinitionBuilder::discardRoot()
+{
+    if (openStages_.empty())
+        return;
+
+    while (openStages_.size() > 1)
+        openStages_.pop();
+
+    CompositeNode *root = openStages_.top();
+    openStages_.pop();
+    delete root;
+}
 
 // Ensures the builder has an active workflow product
 void DefinitionBuilder::requireProduct() const
@@ -28,14 +46,13 @@ CompositeNode &DefinitionBuilder::current() const
 // Starts a new workflow definition and resets the builder state
 void DefinitionBuilder::reset(const std::string &name, int version)
 {
+    discardRoot();
     product_.reset(new WorkflowDefinition(name, version));
-    while (!openStages_.empty())
-        openStages_.pop();
     lastTask_.reset();
     stageCount_ = 0;
     itemCount_ = 0;
 
-    std::shared_ptr<CompositeNode> root(new Stage("stage-" + std::to_string(stageCount_++), name, false));
+    CompositeNode *root = new Stage("stage-" + std::to_string(stageCount_++), name, false);
     openStages_.push(root);
 }
 
@@ -43,9 +60,10 @@ void DefinitionBuilder::reset(const std::string &name, int version)
 void DefinitionBuilder::beginStage(const std::string &name, bool parallel)
 {
     requireProduct();
-    std::shared_ptr<CompositeNode> stage(new Stage("stage-" + std::to_string(stageCount_++), name, parallel));
-    current().add(stage);
-    openStages_.push(stage);
+    std::unique_ptr<CompositeNode> stage(new Stage("stage-" + std::to_string(stageCount_++), name, parallel));
+    current().add(stage.get());
+    openStages_.push(stage.get());
+    stage.release(); // parent CompositeNode now owns the stage
     lastTask_.reset();
 }
 
@@ -65,7 +83,9 @@ void DefinitionBuilder::addTask(const std::string &name, const std::string &role
     requireProduct();
     std::shared_ptr<Task> spec = std::make_shared<Task>(name, role);
     product_->addTask(spec);
-    current().add(std::make_shared<BasicWorkItem>("item-" + std::to_string(itemCount_++), spec));
+    std::unique_ptr<BasicWorkItem> item(new BasicWorkItem("item-" + std::to_string(itemCount_++), spec));
+    current().add(item.get());
+    item.release(); // parent CompositeNode now owns the item
     lastTask_ = spec;
 }
 
@@ -75,7 +95,11 @@ void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
     requireProduct();
     if (!t)
         throw std::string("DefinitionBuilder: addCustomItem needs an item");
-    current().add(t);
+    // CompositeNode owns raw child pointers, so add an independent clone of
+    // the supplied shared item rather than creating conflicting ownership.
+    std::unique_ptr<WorkItem> clone(t->clone());
+    current().add(clone.get());
+    clone.release(); // parent CompositeNode now owns the clone
     lastTask_.reset();
 }
 
@@ -97,7 +121,7 @@ WorkflowDefinition *DefinitionBuilder::getResult()
     requireProduct();
     if (openStages_.size() != 1)
         throw std::string("DefinitionBuilder: getResult() with a stage still open");
-    product_->setRoot(openStages_.top());
+    product_->setRoot(std::shared_ptr<WorkflowNode>(openStages_.top()));
     while (!openStages_.empty())
         openStages_.pop();
     lastTask_.reset();

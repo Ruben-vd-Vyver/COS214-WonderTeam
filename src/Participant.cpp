@@ -15,6 +15,14 @@ void Participant::addRole(std::string role){
     roles_.push_back(role);
 }
 
+bool Participant::removeRole(const std::string &role){
+    std::vector<std::string>::iterator it = std::find(roles_.begin(), roles_.end(), role);
+    if (it == roles_.end())
+        return false;
+    roles_.erase(it);
+    return true;
+}
+
 bool Participant::hasRole(std::string role) const{
     return std::find(roles_.begin(), roles_.end(), role) != roles_.end();
 }
@@ -55,4 +63,8 @@ void Participant::incrementWorkload() {
 
 std::string Participant::getName() const {
     return name_;
+}
+
+const std::vector<std::string>& Participant::getRoles() const {
+    return roles_;
 }
