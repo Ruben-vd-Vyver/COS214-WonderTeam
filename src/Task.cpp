@@ -30,11 +30,11 @@ const std::vector<std::string> &Task::getRequiredFields() const
 }
 
 // Attaches an approval chain to a trigger, replacing any earlier one
-void Task::requireApproval(const std::string &trigger, ApprovalHandler *chain)
+void Task::requireApproval(const std::string &trigger, ApprovalHandler *chain, int requiredLevel)
 {
     if (!chain)
         throw std::string("Task::requireApproval: chain is null");
-    approvals_[trigger] = chain;
+    approvals_[trigger] = {chain, requiredLevel};
 }
 
 // Reports whether a trigger needs approval
@@ -46,6 +46,11 @@ bool Task::requiresApproval(const std::string &trigger) const
 // Returns the chain for a trigger, or nullptr when none is required
 ApprovalHandler *Task::getApprovalChain(const std::string &trigger) const
 {
-    std::map<std::string, ApprovalHandler *>::const_iterator it = approvals_.find(trigger);
-    return it == approvals_.end() ? nullptr : it->second;
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? nullptr : it->second.chain;
+}
+
+int Task::getRequiredLevel(const std::string& trigger) const {
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? 1 : it->second.requiredLevel;
 }

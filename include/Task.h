@@ -19,7 +19,11 @@ private:
     std::string name_;
     std::string requiredRole_;
     std::vector<std::string> requiredFields_;
-    std::map<std::string, ApprovalHandler *> approvals_;
+	struct ApprovalInfo {
+            ApprovalHandler* chain;
+            int requiredLevel;
+        };
+    std::map<std::string, ApprovalInfo> approvals_;
 
 public:
     /**
@@ -53,7 +57,7 @@ public:
      * @param trigger Value or object supplied by the caller.
      * @param chain Value or object supplied by the caller.
      */
-    void requireApproval(const std::string &trigger, ApprovalHandler *chain);
+    void requireApproval(const std::string &trigger, ApprovalHandler *chain, int requiredLevel);
     /**
      * @brief Performs the requires approval operation.
      * @param trigger Value or object supplied by the caller.
@@ -66,6 +70,13 @@ public:
      * @return Result produced by the operation.
      */
     ApprovalHandler *getApprovalChain(const std::string &trigger) const;
+	/**
+     * @brief Retrieves the minimum required approval level associated with a specific trigger.
+     * @param trigger Unique identifier string mapping to an active workflow validation event.
+     * @return An integer representing the minimum necessary authority or verification level. 
+     *         Defaults to 1 if no explicit mapping or custom chain is registered for the trigger.
+     */
+	int getRequiredLevel(const std::string& trigger) const;
 };
 
 #endif
