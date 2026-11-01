@@ -15,6 +15,6 @@ WorkflowNode* SubProcess::clone() const {
 }
 
 void SubProcess::activate() {
-	for (auto* c : children_)
+	for (auto& c : children_)
 		if(!c->isComplete()) c->activate();
 }
