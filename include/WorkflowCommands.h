@@ -47,4 +47,15 @@ public:
     }
 };
 
+// Concrete Command: closes the most recently opened stage
+class EndStageCommand : public Command
+{
+public:
+    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &) override
+    {
+        builder.endStage();
+        return true;
+    }
+};
+
 #endif // WORKFLOW_COMMANDS_H

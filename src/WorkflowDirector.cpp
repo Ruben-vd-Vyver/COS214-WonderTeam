@@ -73,6 +73,7 @@ void WorkflowDirector::initializeDefaultCommands()
 {
     commands_["stage"] = new StageCommand();
     commands_["task"] = new TaskCommand();
+    commands_["end"] = new EndStageCommand();
 }
 
 // Parse input lines and execute builder commands to construct a workflow

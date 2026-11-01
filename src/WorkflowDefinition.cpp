@@ -1,6 +1,8 @@
 #include "WorkflowDefinition.h"
 #include <algorithm> //used for find in chains_
 #include "Task.h"
+#include "WorkflowInstance.h"
+#include "WorkflowNode.h"
 
 // Constructs a workflow definition with the supplied name and version
 WorkflowDefinition::WorkflowDefinition(std::string name, int version) : name_(std::move(name)), version_(version) {}
@@ -58,9 +60,11 @@ const std::vector<ApprovalHandler *> &WorkflowDefinition::getChains() const
     return chains_;
 }
 
-// TODO: once WorkflowInstance return an instance built from root_->clone() (Prototype) so every run gets its own copy of the tree
-// Creates a runtime workflow instance from this definition
-WorkflowInstance *WorkflowDefinition::createInstance() const
+// Prototype: creates a runtime instance with its own deep copy of the tree,
+// so running one case never changes the definition or any other case
+WorkflowInstance *WorkflowDefinition::createInstance(const std::string &instanceId) const
 {
-    throw "WorkflowDefinition::createInstance: WorkflowInstance not implemented yet my guy";
+    if (!root_)
+        throw "WorkflowDefinition::createInstance: definition has no root";
+    return new WorkflowInstance(*this, root_->clone(), instanceId);
 }

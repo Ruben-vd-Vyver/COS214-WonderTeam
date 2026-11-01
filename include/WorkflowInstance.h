@@ -15,7 +15,9 @@ class WorkItemCommand;
 class WorkflowNode;
 class WorkflowDefinition;
 
-// ConcreteSubject
+// ConcreteSubject: one running case of a WorkflowDefinition.
+// Owns its own copy of the workflow tree (made with Prototype), its own
+// command history (undo) and its own work allocator (Strategy).
 class WorkflowInstance : public WorkflowSubject
 {
 private:
@@ -24,23 +26,26 @@ private:
     std::unique_ptr<WorkflowNode> root_;
     CommandHistory history_;
     WorkAllocator allocator_;
-    void publishEvent(const std::string &type, WorkItem *item, const std::string &detail, std::time_t deadline = 0, bool hasDeadline = false);
+    void publishEvent(const std::string &type, WorkItem *item, const std::string &detail,
+                      std::time_t deadline = 0, bool hasDeadline = false);
 
 public:
+    // root must be a tree this instance can own, i.e. definition.getRoot()->clone()
     WorkflowInstance(const WorkflowDefinition &def, WorkflowNode *root, const std::string &id);
-    explicit WorkflowInstance(const std::string &instanceId);
     ~WorkflowInstance();
     WorkflowInstance(const WorkflowInstance &) = delete;
     WorkflowInstance &operator=(const WorkflowInstance &) = delete;
+
     const std::string &getInstanceId() const;
     void start();
 
-    void perform(WorkItemCommand *cmd);
+    bool perform(WorkItemCommand *cmd); // takes ownership of cmd
     bool undoLast();
     WorkflowNode *getRoot() const;
     WorkItem *findItem(const std::string &id) const;
     bool isComplete() const;
     WorkAllocator &getAllocator();
+
     void setData(const std::string &key, const std::string &value);
     bool getData(const std::string &key, std::string &value) const;
     std::string getData(const std::string &key) const;
