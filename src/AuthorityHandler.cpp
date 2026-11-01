@@ -1,4 +1,5 @@
 #include "AuthorityHandler.h"
+#include "Participant.h"
 
 AuthorityHandler::AuthorityHandler() {}
 

@@ -1,6 +1,9 @@
-#ifndef COMMAND_HISTOY
+#ifndef COMMAND_HISTORY
 #define COMMAND_HISTORY
 
+#include <iostream>
+#include <string>
+#include <vector>
 #include "WorkItemCommand.h"
 
 

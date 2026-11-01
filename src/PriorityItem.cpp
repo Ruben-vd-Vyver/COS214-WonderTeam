@@ -3,7 +3,7 @@
 PriorityItem::PriorityItem(WorkItem* inner, int priority) 
 	: WorkItemDecorator(inner), priority_(priority) {}
 
-int PriorityItem:getPriority() const {
+int PriorityItem::getPriority() const {
 	return priority_;
 }
 

@@ -1,3 +1,6 @@
+#ifndef VALIDATEDITEM_H
+#define VALIDATEDITEM_H
+
 #include "WorkItemDecorator.h"
 
 class ValidatedItem : public WorkItemDecorator {
@@ -7,3 +10,5 @@ public:
     	void complete() override;
     	WorkItem* clone() const override;
 };
+
+#endif

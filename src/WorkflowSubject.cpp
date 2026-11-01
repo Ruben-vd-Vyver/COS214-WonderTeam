@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-WorkflowSubject::WorkflowSubject() {}
-
 WorkflowSubject::WorkflowSubject(): dispatching(false) {}
 
 WorkflowSubject::~WorkflowSubject() {
