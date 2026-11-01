@@ -16,16 +16,21 @@ class Task {
 		std::string name_;
 		std::string requiredRole_;
 		std::vector<std::string> requiredFields_;
-		std::map<std::string, ApprovalHandler*> approvals_; // trigger -> chain (not owned)
+		struct ApprovalInfo {
+            ApprovalHandler* chain;
+            int requiredLevel;
+        };
+		std::map<std::string, ApprovalInfo> approvals_; // trigger -> chain (not owned)
 	public:
 		Task(std::string name, std::string role);
 		const std::string& getName() const;
 		const std::string& getRequiredRole() const;
 		const std::vector<std::string>& getRequiredFields() const;
 		void addRequiredField(const std::string& field);
-		void requireApproval(const std::string& trigger, ApprovalHandler* chain);
-		bool requiresApproval(const std::string& trigger) const;
-		ApprovalHandler* getApprovalChain(const std::string& trigger) const;
+		void requireApproval(const std::string& trigger, ApprovalHandler* chain, int requiredLevel = 1);
+        bool requiresApproval(const std::string& trigger) const;
+        ApprovalHandler* getApprovalChain(const std::string& trigger) const;
+        int getRequiredLevel(const std::string& trigger) const;
 };
 
 #endif

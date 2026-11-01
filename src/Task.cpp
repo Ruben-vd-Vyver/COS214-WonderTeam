@@ -11,15 +11,20 @@ const std::vector<std::string>& Task::getRequiredFields() const { return require
 
 void Task::addRequiredField(const std::string& field) { requiredFields_.push_back(field); }
 
-void Task::requireApproval(const std::string& trigger, ApprovalHandler* chain) {
-	approvals_[trigger] = chain;
+void Task::requireApproval(const std::string& trigger, ApprovalHandler* chain, int requiredLevel) {
+    approvals_[trigger] = {chain, requiredLevel};
 }
 
 bool Task::requiresApproval(const std::string& trigger) const {
-	return approvals_.find(trigger) != approvals_.end();
+    return approvals_.find(trigger) != approvals_.end();
 }
 
 ApprovalHandler* Task::getApprovalChain(const std::string& trigger) const {
-	std::map<std::string, ApprovalHandler*>::const_iterator it = approvals_.find(trigger);
-	return it == approvals_.end() ? nullptr : it->second;
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? nullptr : it->second.chain;
+}
+
+int Task::getRequiredLevel(const std::string& trigger) const {
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? 1 : it->second.requiredLevel;
 }
