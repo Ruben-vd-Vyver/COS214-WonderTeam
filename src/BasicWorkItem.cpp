@@ -1,4 +1,5 @@
 #include "BasicWorkItem.h"
+#include "Participant.h"
 #include "PendingState.h"
 #include "AwaitingApprovalState.h"
 #include "WorkItemMemento.h"
@@ -56,7 +57,17 @@ void BasicWorkItem::setState(WorkItemState *s)
     publish("state.changed");
 }
 
-void BasicWorkItem::setAssignee(Participant *p) { assignee_ = p; }
+void BasicWorkItem::setAssignee(Participant *p)
+{
+    if (assignee_ == p)
+        return;
+    if (p)
+        p->assign(&getTask());
+    if (assignee_)
+        assignee_->unassign(&getTask());
+    assignee_ = p;
+}
+
 void BasicWorkItem::advanceTo(WorkItemState *next, const std::string &trigger)
 {
     if (!next)
@@ -74,7 +85,7 @@ BasicWorkItem *BasicWorkItem::clone() const
 {
     BasicWorkItem *copy = new BasicWorkItem(id_, task_);
     copy->state_.reset(state_->clone());
-    copy->assignee_ = assignee_;
+    copy->setAssignee(assignee_);
     copy->payload_ = payload_;
     return copy;
 }
@@ -91,7 +102,7 @@ void BasicWorkItem::restore(const WorkItemMemento &m)
         throw std::invalid_argument("BasicWorkItem::restore: memento holds no state");
     std::unique_ptr<WorkItemState> restored(m.savedState_->clone());
     state_ = std::move(restored);
-    assignee_ = m.assignee_;
+    setAssignee(m.assignee_);
     payload_ = m.payload_;
     publish("state.restored");
 }

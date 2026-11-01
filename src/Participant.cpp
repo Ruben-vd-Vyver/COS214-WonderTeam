@@ -27,11 +27,23 @@ bool Participant::hasRole(std::string role) const{
     return std::find(roles_.begin(), roles_.end(), role) != roles_.end();
 }
 
-void Participant::assign(Task* task){
+void Participant::assign(const Task* task){
     if (task){
         assignments_.push_back(task);
         workload_++;
     }
+}
+
+bool Participant::unassign(const Task* task){
+    if (!task)
+        return false;
+    std::vector<const Task*>::iterator it = std::find(assignments_.begin(), assignments_.end(), task);
+    if (it == assignments_.end())
+        return false;
+    assignments_.erase(it);
+    if (workload_ > 0)
+        workload_--;
+    return true;
 }
         
 int Participant::getWorkload() const{

@@ -38,7 +38,7 @@ TEST_CASE("each assignment strategy picks a different person") {
 		alloc.setStrategy(&rule);
 		int before = free.getWorkload();
 		CHECK(alloc.allocate(triage, pool) == &free);
-		CHECK(free.getWorkload() == before + 1);
+		CHECK(free.getWorkload() == before);
 	}
 }
 //Empty Pool Edge Cases
@@ -86,7 +86,7 @@ TEST_CASE("strategies return nullptr when no participants match constraints") {
 	CHECK(ruleStrategy.select(xray, pool) == nullptr);
 }
 //WorkAllocator Context & Runtime Swapping
-TEST_CASE("WorkAllocator manages strategies and mutates workloads correctly at runtime") {
+TEST_CASE("WorkAllocator selects participants without mutating their workloads") {
 	Participant nurse1("Alice", 1, roles("nurse"));
 	Participant nurse2("Bob", 1, roles("nurse"));
 
@@ -104,7 +104,7 @@ TEST_CASE("WorkAllocator manages strategies and mutates workloads correctly at r
 
 		Participant* selected = alloc.allocate(triage, pool);
 		CHECK(selected == &nurse1);
-		CHECK(nurse1.getWorkload() == 1); //Workload increments via allocator
+		CHECK(nurse1.getWorkload() == 0);
 	}
 
 	SUBCASE("Dynamic strategy swapping and cumulative workload tracking") {
@@ -121,13 +121,13 @@ TEST_CASE("WorkAllocator manages strategies and mutates workloads correctly at r
 		
 		//Should pick nurse2 because workload (0) < nurse1 workload (2)
 		CHECK(selected == &nurse2);
-		CHECK(nurse2.getWorkload() == 1);
+		CHECK(nurse2.getWorkload() == 0);
 
 		//Swap back to role-based
 		alloc.setStrategy(&roleStrat);
 		selected = alloc.allocate(triage, pool);
 		CHECK(selected == &nurse1);
-		CHECK(nurse1.getWorkload() == 3);
+		CHECK(nurse1.getWorkload() == 2);
 	}
 }
 }
