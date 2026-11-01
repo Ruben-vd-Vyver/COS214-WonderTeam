@@ -1,20 +1,15 @@
 #include "WorkflowDirector.h"
+#include <istream>
 #include <sstream>
 
-// Initializes the director with an is and default command
+// Initializes the director with an input stream and the default commands
 WorkflowDirector::WorkflowDirector(std::istream &inputSource) : in_(inputSource)
 {
     initializeDefaultCommands();
 }
 
-// Releases command objects owned by the director
-WorkflowDirector::~WorkflowDirector()
-{
-    for (auto &pair : commands_)
-    {
-        delete pair.second;
-    }
-}
+// Commands are owned by unique_ptr, so there is nothing to release by hand
+WorkflowDirector::~WorkflowDirector() {}
 
 // Removes space from both ends of string
 std::string WorkflowDirector::trim(const std::string &str)
@@ -40,7 +35,7 @@ std::string WorkflowDirector::toLower(const std::string &str)
     {
         if (result[i] >= 'A' && result[i] <= 'Z')
         {
-            result[i] = result[i] + ('a' - 'A');
+            result[i] = static_cast<char>(result[i] + ('a' - 'A'));
         }
     }
     return result;
@@ -59,29 +54,45 @@ std::vector<std::string> WorkflowDirector::tokenize(const std::string &line, cha
     return tokens;
 }
 
-// Registers a named approval chain for later
+// Registers a named approval chain for 'approve' lines to refer to
 void WorkflowDirector::registerApprovalChain(const std::string &name, ApprovalHandler *chain)
 {
-    if (chain != nullptr)
-    {
-        chains_[name] = chain;
-    }
+    if (chain == nullptr)
+        throw std::string("WorkflowDirector::registerApprovalChain: chain is null");
+    context_.chains[name] = chain;
 }
 
-// Creates the stage and task commands
+// Creates one command object per command word
 void WorkflowDirector::initializeDefaultCommands()
 {
-    commands_["stage"] = new StageCommand();
-    commands_["task"] = new TaskCommand();
+    commands_["workflow"].reset(new WorkflowCommand());
+    commands_["stage"].reset(new StageCommand());
+    commands_["end"].reset(new EndCommand());
+    commands_["task"].reset(new TaskCommand());
+    commands_["approve"].reset(new ApproveLineCommand());
+    commands_["done"].reset(new DoneCommand());
 }
 
-// Parse input lines and execute builder commands to construct a workflow
+// Returns the message of the last failed construct(), or an empty string
+const std::string &WorkflowDirector::getError() const
+{
+    return error_;
+}
+
+// Parse input lines and execute builder commands to construct a workflow.
+// Errors from the commands (std::string) and from the builder (string literals) are
+// reported with their line number: they go to getError() and std::cerr, and construct() returns false.
 bool WorkflowDirector::construct(WorkflowBuilder &builder)
 {
+    context_.started = false;
+    context_.finished = false;
+    context_.openStages = 0;
+    error_.clear();
+
     std::string line;
     int lineNum = 0;
 
-    while (std::getline(in_, line))
+    while (!context_.finished && std::getline(in_, line))
     {
         ++lineNum;
         std::string cleanedLine = trim(line);
@@ -89,26 +100,40 @@ bool WorkflowDirector::construct(WorkflowBuilder &builder)
         if (cleanedLine.empty() || cleanedLine[0] == '#')
             continue;
 
-        std::vector<std::string> tokens = tokenize(cleanedLine, '|');
-        if (tokens.empty())
-            continue;
-
-        std::string cmdName = toLower(tokens[0]);
-
-        auto it = commands_.find(cmdName);
-        if (it != commands_.end())
+        try
         {
-            if (!it->second->execute(builder, tokens))
-            {
-                std::cerr << "Failed at line " << lineNum << "\n";
-                return false;
-            }
+            std::vector<std::string> tokens = tokenize(cleanedLine, '|');
+            std::string cmdName = toLower(tokens[0]);
+
+            std::map<std::string, std::unique_ptr<Command>>::const_iterator it = commands_.find(cmdName);
+            if (it == commands_.end())
+                throw std::string("unknown command '" + cmdName + "'");
+
+            it->second->execute(builder, tokens, context_);
         }
-        else
+        catch (const std::string &e)
         {
-            std::cerr << "Error: Unknown command '" << cmdName << "' at line " << lineNum << "\n";
+            error_ = "line " + std::to_string(lineNum) + ": " + e;
+        }
+        catch (const char *e) // DefinitionBuilder reports misuse with string literals
+        {
+            error_ = "line " + std::to_string(lineNum) + ": " + e;
+        }
+        if (!error_.empty())
+        {
+            std::cerr << error_ << "\n";
             return false;
         }
+    }
+
+    if (!context_.started)
+        error_ = "scenario input has no 'workflow' line";
+    else if (context_.openStages > 0)
+        error_ = "input ended with " + std::to_string(context_.openStages) + " stage(s) still open (missing 'end')";
+    if (!error_.empty())
+    {
+        std::cerr << error_ << "\n";
+        return false;
     }
     return true;
 }

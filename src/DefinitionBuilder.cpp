@@ -16,7 +16,7 @@ DefinitionBuilder::~DefinitionBuilder() {}
 void DefinitionBuilder::requireProduct() const
 {
     if (!product_)
-        throw "DefinitionBuilder: call reset() first";
+        throw std::string("DefinitionBuilder: call reset() first");
 }
 
 // Returns the currently open stage being constructed
@@ -54,7 +54,7 @@ void DefinitionBuilder::endStage()
 {
     requireProduct();
     if (openStages_.size() <= 1)
-        throw "DefinitionBuilder: endStage() without an open stage";
+        throw std::string("DefinitionBuilder: endStage() without an open stage");
     openStages_.pop();
     lastTask_.reset();
 }
@@ -74,7 +74,7 @@ void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
 {
     requireProduct();
     if (!t)
-        throw "DefinitionBuilder: addCustomItem needs an item";
+        throw std::string("DefinitionBuilder: addCustomItem needs an item");
     current().add(t);
     lastTask_.reset();
 }
@@ -84,9 +84,9 @@ void DefinitionBuilder::requireApproval(const std::string &trigger, ApprovalHand
 {
     requireProduct();
     if (!lastTask_)
-        throw "DefinitionBuilder: requireApproval() must directly follow addTask()";
+        throw std::string("DefinitionBuilder: requireApproval() must directly follow addTask()");
     if (!chain)
-        throw "DefinitionBuilder: requireApproval needs a handler chain";
+        throw std::string("DefinitionBuilder: requireApproval needs a handler chain");
     lastTask_->requireApproval(trigger, chain);
     product_->addChain(chain);
 }
@@ -96,7 +96,7 @@ WorkflowDefinition *DefinitionBuilder::getResult()
 {
     requireProduct();
     if (openStages_.size() != 1)
-        throw "DefinitionBuilder: getResult() with a stage still open";
+        throw std::string("DefinitionBuilder: getResult() with a stage still open");
     product_->setRoot(openStages_.top());
     while (!openStages_.empty())
         openStages_.pop();

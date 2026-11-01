@@ -5,6 +5,6 @@ class Director
 {
 public:
     virtual ~Director() {}
-    virtual void construct(WorkflowBuilder &b) = 0;
+    virtual bool construct(WorkflowBuilder &b) = 0;
 };
 #endif // DIRECTOR_H

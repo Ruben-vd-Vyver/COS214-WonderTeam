@@ -1,6 +1,8 @@
 #include "WorkflowDefinition.h"
 #include <algorithm> //used for find in chains_
 #include "Task.h"
+#include "WorkflowInstance.h"
+#include "WorkflowNode.h"
 
 // Constructs a workflow definition with the supplied name and version
 WorkflowDefinition::WorkflowDefinition(std::string name, int version) : name_(std::move(name)), version_(version) {}
@@ -33,7 +35,7 @@ int WorkflowDefinition::getVersion() const
 void WorkflowDefinition::addTask(std::shared_ptr<Task> t)
 {
     if (!t)
-        throw "WorkflowDefinition::addTask: task is null";
+        throw std::string("WorkflowDefinition::addTask: task is null");
     tasks_.push_back(std::move(t));
 }
 
@@ -47,7 +49,7 @@ const std::vector<std::shared_ptr<Task>> &WorkflowDefinition::getTasks() const
 void WorkflowDefinition::addChain(ApprovalHandler *h)
 {
     if (!h)
-        throw "WorkflowDefinition::addChain: chain is null";
+        throw std::string("WorkflowDefinition::addChain: chain is null");
     if (std::find(chains_.begin(), chains_.end(), h) == chains_.end())
         chains_.push_back(h);
 }
@@ -58,9 +60,12 @@ const std::vector<ApprovalHandler *> &WorkflowDefinition::getChains() const
     return chains_;
 }
 
-// TODO: once WorkflowInstance return an instance built from root_->clone() (Prototype) so every run gets its own copy of the tree
-// Creates a runtime workflow instance from this definition
-WorkflowInstance *WorkflowDefinition::createInstance() const
+// Creates a runtime instance holding its own deep copy of the tree, so runs never share state
+WorkflowInstance *WorkflowDefinition::createInstance(const std::string &id) const
 {
-    throw "WorkflowDefinition::createInstance: WorkflowInstance not implemented yet my guy";
+    if (!root_)
+        throw std::string("WorkflowDefinition::createInstance: definition has no root");
+    static int runCount = 0;
+    std::string runId = id.empty() ? name_ + "-v" + std::to_string(version_) + "-" + std::to_string(++runCount) : id;
+    return new WorkflowInstance(*this, root_->clone(), runId); // the instance owns the copy
 }
