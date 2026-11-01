@@ -1,3 +1,6 @@
+#ifndef COMPOSITENODE_H
+#define COMPOSITENODE_H
+
 #include "WorkflowNode.h"
 
 class CompositeNode : public WorkflowNode {
@@ -11,11 +14,12 @@ class CompositeNode : public WorkflowNode {
 		~CompositeNode() override;
 		void add(WorkflowNode* node);
 		void remove(WorkflowNode* node);
-		const std::vector<std::shared_ptr<WorkflowNode>> & 
-			getChildren() const override;
 		bool isComplete() const override;
 		int childCount() const override;
 		WorkflowNode* child(int i) const override;
+		void bind(WorkflowSubject* s) override;
 		WorkItem* find(const std::string& id) override;
 		WorkflowIterator* createIterator() override;
 };
+
+#endif
