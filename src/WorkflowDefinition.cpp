@@ -35,7 +35,7 @@ int WorkflowDefinition::getVersion() const
 void WorkflowDefinition::addTask(std::shared_ptr<Task> t)
 {
     if (!t)
-        throw "WorkflowDefinition::addTask: task is null";
+        throw std::string("WorkflowDefinition::addTask: task is null");
     tasks_.push_back(std::move(t));
 }
 
@@ -49,7 +49,7 @@ const std::vector<std::shared_ptr<Task>> &WorkflowDefinition::getTasks() const
 void WorkflowDefinition::addChain(ApprovalHandler *h)
 {
     if (!h)
-        throw "WorkflowDefinition::addChain: chain is null";
+        throw std::string("WorkflowDefinition::addChain: chain is null");
     if (std::find(chains_.begin(), chains_.end(), h) == chains_.end())
         chains_.push_back(h);
 }
@@ -60,11 +60,12 @@ const std::vector<ApprovalHandler *> &WorkflowDefinition::getChains() const
     return chains_;
 }
 
-// Prototype: creates a runtime instance with its own deep copy of the tree,
-// so running one case never changes the definition or any other case
-WorkflowInstance *WorkflowDefinition::createInstance(const std::string &instanceId) const
+// Creates a runtime instance holding its own deep copy of the tree, so runs never share state
+WorkflowInstance *WorkflowDefinition::createInstance(const std::string &id) const
 {
     if (!root_)
-        throw "WorkflowDefinition::createInstance: definition has no root";
-    return new WorkflowInstance(*this, root_->clone(), instanceId);
+        throw std::string("WorkflowDefinition::createInstance: definition has no root");
+    static int runCount = 0;
+    std::string runId = id.empty() ? name_ + "-v" + std::to_string(version_) + "-" + std::to_string(++runCount) : id;
+    return new WorkflowInstance(*this, root_->clone(), runId); // the instance owns the copy
 }

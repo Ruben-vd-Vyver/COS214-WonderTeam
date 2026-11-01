@@ -1,61 +1,65 @@
 #ifndef WORKFLOW_COMMANDS_H
 #define WORKFLOW_COMMANDS_H
 
-#include <vector>
+#include <map>
 #include <string>
-#include <iostream>
+#include <vector>
 #include "WorkflowBuilder.h"
 
-// Abstract Base Class Command Pattern
+class ApprovalHandler;
+
+struct DirectorContext
+{
+    std::map<std::string, ApprovalHandler *> chains;
+    bool started;
+    bool finished;
+    int openStages;
+
+    DirectorContext() : started(false), finished(false), openStages(0) {}
+};
+
 class Command
 {
 public:
-    virtual ~Command() = default;
-    virtual bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) = 0;
+    virtual ~Command() {}
+
+    virtual void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) = 0;
 };
 
-// Concrete Command
+class WorkflowCommand : public Command
+{
+public:
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
 class StageCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) override
-    {
-        if (args.size() < 2)
-        {
-            std::cerr << "Error: Usage is 'stage | <name> [| parallel|sequential]'\n";
-            return false;
-        }
-        bool isParallel = (args.size() >= 3 && args[2] == "parallel");
-        builder.beginStage(args[1], isParallel);
-        return true;
-    }
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
-// Concrete Command
+class EndCommand : public Command
+{
+public:
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
 class TaskCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &args) override
-    {
-        if (args.size() < 3)
-        {
-            std::cerr << "Error: Usage is 'task | <name> | <role>'\n";
-            return false;
-        }
-        builder.addTask(args[1], args[2]);
-        return true;
-    }
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
-// Concrete Command: closes the most recently opened stage
-class EndStageCommand : public Command
+class ApproveLineCommand : public Command
 {
 public:
-    bool execute(WorkflowBuilder &builder, const std::vector<std::string> &) override
-    {
-        builder.endStage();
-        return true;
-    }
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
+};
+
+class DoneCommand : public Command
+{
+public:
+    void execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context) override;
 };
 
 #endif // WORKFLOW_COMMANDS_H

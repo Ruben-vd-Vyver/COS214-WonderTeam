@@ -1,27 +1,33 @@
 #ifndef WORKFLOW_DIRECTOR_H
 #define WORKFLOW_DIRECTOR_H
 
-#include <string>
 #include <iostream>
-#include <vector>
 #include <map>
-#include "WorkflowBuilder.h"
-#include "ApprovalHandler.h"
+#include <memory>
+#include <string>
+#include <vector>
+#include "Director.h"
 #include "WorkflowCommands.h"
 
-class WorkflowDirector
+class ApprovalHandler;
+
+class WorkflowDirector : public Director
 {
 public:
     explicit WorkflowDirector(std::istream &inputSource);
-    virtual ~WorkflowDirector();
+    ~WorkflowDirector();
+    WorkflowDirector(const WorkflowDirector &) = delete;
+    WorkflowDirector &operator=(const WorkflowDirector &) = delete;
 
-    bool construct(WorkflowBuilder &builder);
+    bool construct(WorkflowBuilder &builder) override;
     void registerApprovalChain(const std::string &name, ApprovalHandler *chain);
+    const std::string &getError() const; 
 
 private:
     std::istream &in_;
-    std::map<std::string, ApprovalHandler *> chains_;
-    std::map<std::string, Command *> commands_;
+    DirectorContext context_;
+    std::map<std::string, std::unique_ptr<Command>> commands_;
+    std::string error_;
 
     void initializeDefaultCommands();
     std::vector<std::string> tokenize(const std::string &line, char delimiter);
