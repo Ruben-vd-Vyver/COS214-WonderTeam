@@ -1,0 +1,17 @@
+# TIVIDY Workflow Definition: Healthcare, this is a comment btw
+# so when demo we can read a scenario from a txt file otherwise it takes foreveer to build
+workflow | HospitalAdmission | 1
+
+# Stage 1: Triage and Assessment (Sequential)
+stage | TriageStage | sequential
+    task | RecordVitalSigns | Nurse
+    task | MedicalAssessment | Physician
+end
+
+# Stage 2: Parallel Department Approvals & Checks
+stage | ApprovalStage | parallel
+    task | InsurancePreAuth | BillingClerk
+    task | RadiologyReview | Radiologist
+end
+
+done

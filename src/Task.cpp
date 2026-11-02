@@ -1,0 +1,66 @@
+#include "Task.h"
+
+#include <utility>
+
+// Creates a task specification with a name and the role that performs it
+Task::Task(std::string name, std::string role) : name_(std::move(name)), requiredRole_(std::move(role)) {}
+
+// Returns the task name
+const std::string &Task::getName() const
+{
+    return name_;
+}
+
+// Returns the role required to perform the task
+const std::string &Task::getRequiredRole() const
+{
+    return requiredRole_;
+}
+
+// Declares a field that must be filled in before the task can complete
+void Task::addRequiredField(const std::string &field)
+{
+    if (field.empty())
+        throw std::string("Task::addRequiredField: field name is empty");
+    requiredFields_.push_back(field);
+}
+
+// Returns the required fields in declaration order
+const std::vector<std::string> &Task::getRequiredFields() const
+{
+    return requiredFields_;
+}
+
+// Attaches an approval chain and authority level to a trigger, replacing any earlier configuration
+void Task::requireApproval(
+    const std::string &trigger,
+    ApprovalHandler *chain,
+    int requiredLevel
+)
+{
+    if (!chain)
+        throw std::string("Task::requireApproval: chain is null");
+    if (requiredLevel < 0)
+        throw std::string("Task::requireApproval: required level cannot be negative");
+    approvals_[trigger] = {chain, requiredLevel};
+}
+
+// Reports whether a trigger needs approval
+bool Task::requiresApproval(const std::string &trigger) const
+{
+    return approvals_.find(trigger) != approvals_.end();
+}
+
+// Returns the chain for a trigger, or nullptr when none is required
+ApprovalHandler *Task::getApprovalChain(const std::string &trigger) const
+{
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? nullptr : it->second.chain;
+}
+
+// Returns the configured authority level, defaulting to 1 when no approval is configured
+int Task::getRequiredLevel(const std::string &trigger) const
+{
+    std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
+    return it == approvals_.end() ? 1 : it->second.requiredLevel;
+}

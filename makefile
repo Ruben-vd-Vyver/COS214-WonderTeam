@@ -1,43 +1,56 @@
-# ---- Project layout ----
-#   include/   all .h files
-#   src/       all .cpp files (including main.cpp)
-#   build/     object files (created automatically)
+# TIVIDY TUI - GNU Make build (C++11)
+# Build:       make
+# Run default: make run
+# Run script:  make run WORKFLOW=workflows/scenario_a_game_patch.txt
+# Clean:       make clean
 
-CXX      := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -g -Iinclude
-# Add -Werror above if you want warnings to fail the build (useful in CI)
+CXX ?= g++
+CXXFLAGS ?= -O2 -Wall -Wextra -pedantic
+CXXFLAGS += -std=c++11
 
-SRC_DIR   := src
+# Keep the source-root path in the binary so the bundled demo can be found
+# regardless of the directory from which the executable is launched.
+CPPFLAGS += -Iinclude -Itui/include -DTIVIDY_SOURCE_DIR='"$(CURDIR)"'
+
+# Debian/Ubuntu ncurses development package provides these link libraries.
+NCURSES_LIBS ?= -lncurses -ltinfo
+THREAD_LIBS ?= -pthread
+LDLIBS += $(NCURSES_LIBS) $(THREAD_LIBS)
+
 BUILD_DIR := build
-TARGET    := tividy
+TARGET := main
 
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS:.o=.d)
+ENGINE_SOURCES := $(wildcard src/*.cpp)
+TUI_SOURCES := $(wildcard tui/src/*.cpp)
+SOURCES := $(ENGINE_SOURCES) $(TUI_SOURCES)
+OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+DEPFILES := $(OBJECTS:.o=.d)
 
-.PHONY: all run asan clean
+.PHONY: all clean run help
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+$(TARGET): $(OBJECTS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-# -MMD -MP writes a .d file per object so editing a header rebuilds only what includes it
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+-include $(DEPFILES)
 
 run: $(TARGET)
+ifdef WORKFLOW
+	./$(TARGET) "$(WORKFLOW)"
+else
 	./$(TARGET)
-
-# Memory-error / leak / undefined-behaviour check (builds everything in one go)
-asan:
-	$(CXX) $(CXXFLAGS) -fsanitize=address,undefined -o $(TARGET)_asan $(SRCS)
-	./$(TARGET)_asan
+endif
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET) $(TARGET)_asan
+	rm -rf $(BUILD_DIR) $(TARGET)
 
--include $(DEPS)
+help:
+	@echo "make                                      Build the TIVIDY TUI"
+	@echo "make run                                  Run the bundled demo workflow"
+	@echo "make run WORKFLOW=path/to/workflow.txt   Run a specific workflow"
+	@echo "make clean                               Remove build output"
