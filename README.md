@@ -91,3 +91,4 @@ Replace "pattern" with the pattern of the test file you would like to run
  - [Demo Document](https://docs.google.com/document/d/1Tvk2_Lwu3TnETVxUGc6hZ45iJdSNOIl9Yx-YCw3b26I/edit?usp=sharing)
  - [Class Diagram](https://online.visual-paradigm.com/share.jsp?id=343138303733392d39#diagram:workspace=katyghkb&proj=0&id=9)
  - [Initial Notes](https://docs.google.com/document/d/1qfJP5-RVT95t6Qr2V-mfdque3NM8BMf-QKCEgJ3NrJ0/edit?usp=sharing)
+ - [Paragraphs](https://docs.google.com/document/d/19CXBDVJRk-ZnCipgHsVcBw5PIg9hPqUZJgu8yc-AoHU/edit?usp=sharing)
