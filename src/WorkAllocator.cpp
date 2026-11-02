@@ -15,9 +15,5 @@ Participant* WorkAllocator::allocate(Task& item, std::vector<Participant*>& pool
 
     Participant* selected = strategy->select(item, pool);
 
-    if (selected != NULL) {
-        selected->incrementWorkload();
-    }
-
     return selected;
 }

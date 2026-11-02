@@ -24,7 +24,7 @@ CompositeNode :: ~CompositeNode() {
 	for (auto* c : children_) delete c;
 }
 
-void CompositeNode::add(std::shared_ptr<WorkflowNode> node) {
+void CompositeNode::add(WorkflowNode* node) {
 	if(!node) throw std::invalid_argument("cannot add a null node");
 	if (subtreeContains(this, node)) throw
 		std::invalid_argument("node is already in this workflow");
@@ -35,12 +35,11 @@ void CompositeNode::add(std::shared_ptr<WorkflowNode> node) {
 }
 
 void CompositeNode::remove(WorkflowNode* node) {
-	auto it = std::find(children_.begin(), children_.end(), 
-			[node](const std::shared_ptr<WorkflowNode>& c) {
-			return c.get() ==node;});
+	auto it = std::find(children_.begin(), children_.end(), node);
 	if (it == children_.end()) throw std::invalid_argument( 
 			"node is not a direct child");
 	children_.erase(it);
+	delete node;
 }
 
 bool CompositeNode::isComplete() const {

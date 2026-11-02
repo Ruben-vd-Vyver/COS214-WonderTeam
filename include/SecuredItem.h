@@ -32,6 +32,11 @@ public:
     	 */
     	void start() override;
     	/**
+    	 * @brief Returns the roles permitted to access this work item.
+    	 * @return A constant reference to the permitted roles.
+    	 */
+    	const std::vector<std::string>& getPermittedRoles() const;
+    	/**
     	 * @brief Performs the clone operation.
     	 * @return Result produced by the operation.
     	 */

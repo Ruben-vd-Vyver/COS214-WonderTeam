@@ -33,6 +33,11 @@ class WorkflowIterator {
 		 * @return Result produced by the operation.
 		 */
 		virtual bool isDone() = 0;              
+		/**
+		 * @brief Returns the current node's depth relative to the iterator root.
+		 * @return The current node's depth, or -1 if there is no current node.
+		 */
+		virtual int currentDepth() const = 0; // depth of current node relative to iterator root
 };
 
 #endif // WORKFLOWITERATOR_H

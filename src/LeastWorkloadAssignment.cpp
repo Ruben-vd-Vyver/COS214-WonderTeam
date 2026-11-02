@@ -1,20 +1,13 @@
 #include "LeastWorkloadAssignment.h"
 
 Participant* LeastWorkloadAssignment::select(Task& item, std::vector<Participant*>& pool) {
-    if (pool.empty()) { //checks empty
-        return NULL;
+    Participant* selected = nullptr;
+    for (std::size_t i = 0; i < pool.size(); ++i) {
+        Participant* candidate = pool[i];
+        if (!candidate || !candidate->hasRole(item.getRequiredRole()))
+            continue;
+        if (!selected || candidate->getWorkload() < selected->getWorkload())
+            selected = candidate;
     }
-
-    Participant* selected = pool[0];
-
-    for (int i = 1; i < pool.size(); i++) {
-        //lower workload updates selescted
-        if (pool[i]->getWorkload() <
-            selected->getWorkload()) {
-
-            selected = pool[i];
-        }
-    }
-
     return selected;
 }

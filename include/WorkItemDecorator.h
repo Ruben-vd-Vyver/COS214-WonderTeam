@@ -16,6 +16,11 @@ public:
 	 */
 	explicit WorkItemDecorator(WorkItem* inner);
 	/**
+	 * @brief Returns the wrapped work item without transferring ownership.
+	 * @return A non-owning pointer to the wrapped work item.
+	 */
+	WorkItem* wrappedItem() const; // non-owning access for Facade metadata projection
+	/**
 	 * @brief Destroys this object and releases owned resources.
 	 */
 	~WorkItemDecorator() override;

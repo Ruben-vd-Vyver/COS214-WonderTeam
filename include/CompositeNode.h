@@ -31,7 +31,7 @@ class CompositeNode : public WorkflowNode {
 		 * @brief Performs the add operation.
 		 * @param node Value or object supplied by the caller.
 		 */
-		void add(std::shared_ptr<WorkflowNode> node);
+		void add(WorkflowNode* node);
 		/**
 		 * @brief Performs the remove operation.
 		 * @param node Value or object supplied by the caller.

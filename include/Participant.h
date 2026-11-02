@@ -24,7 +24,7 @@ class Participant {
         std::string name_;
         std::vector<std::string> roles_;
         int authorityLevel_;
-        std::vector<Task*> assignments_;
+        std::vector<const Task*> assignments_;
         int workload_ = 0; //how much task/work is currently assigned to this participant
         static int ParticipantCount_;
     public:
@@ -45,6 +45,12 @@ class Participant {
          */
         void addRole(std::string role);
         /**
+         * @brief Removes the first matching role from this participant.
+         * @param role Role to remove.
+         * @return true if the role was found and removed; otherwise, false.
+         */
+        bool removeRole(const std::string &role);
+        /**
          * @brief Reports whether the requested condition is satisfied.
          * @param role Value or object supplied by the caller.
          * @return Result produced by the operation.
@@ -54,7 +60,13 @@ class Participant {
          * @brief Performs the assign operation.
          * @param task Value or object supplied by the caller.
          */
-        void assign(Task* task);
+        void assign(const Task* task);
+        /**
+         * @brief Removes one matching task assignment and updates the workload.
+         * @param task Task assignment to remove.
+         * @return true if an assignment was found and removed; otherwise, false.
+         */
+        bool unassign(const Task* task);
         /**
          * @brief Returns the workload.
          * @return Result produced by the operation.
@@ -75,6 +87,11 @@ class Participant {
          * @return Result produced by the operation.
          */
         std::string getName() const;
+        /**
+         * @brief Returns the participant's roles.
+         * @return A constant reference to the participant's role list.
+         */
+        const std::vector<std::string>& getRoles() const;
         /**
          * @brief Performs the increment workload operation.
          */

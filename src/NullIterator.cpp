@@ -7,3 +7,5 @@ void NullIterator::next() {}
 WorkflowNode* NullIterator::current() { return nullptr; }
 
 bool NullIterator::isDone() { return true; }
+
+int NullIterator::currentDepth() const { return -1; }

@@ -26,6 +26,11 @@ class NullIterator : public WorkflowIterator {
 		 * @return Result produced by the operation.
 		 */
 		bool isDone() override;
+		/**
+		 * @brief Returns the current node's depth.
+		 * @return -1 because a null iterator has no current node.
+		 */
+		int currentDepth() const override;
 };
 
 #endif // NULLITERATOR_H

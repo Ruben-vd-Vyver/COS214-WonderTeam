@@ -20,6 +20,7 @@ TEST_CASE("commands run through the instance and undo in reverse order") {
 	REQUIRE(item != nullptr);
 
 	CHECK(inst->perform(new AssignCommand(item, &ann)));
+	CHECK(ann.getWorkload() == 1);
 	CHECK(inst->perform(new StartCommand(item)));
 	CHECK(item->getStateName() == "InProgress");
 
@@ -29,8 +30,39 @@ TEST_CASE("commands run through the instance and undo in reverse order") {
 	CHECK(inst->undoLast());
 	CHECK(item->getStateName() == "Available");
 	CHECK(item->getAssignee() == nullptr);
+	CHECK(ann.getWorkload() == 0);
 
 	CHECK_FALSE(inst->undoLast()); // nothing left
+}
+
+TEST_CASE("reassigning a work item transfers workload and undo restores it") {
+	std::unique_ptr<WorkflowDefinition> def(buildDefinition(admissionScript()));
+	REQUIRE(def != nullptr);
+	std::unique_ptr<WorkflowInstance> inst(def->createInstance("cmd"));
+	Participant ann("Ann", 1, roles("nurse"));
+	Participant bob("Bob", 1, roles("nurse"));
+	inst->getRoot()->activate();
+	WorkItem* item = inst->findItem("item-0");
+	REQUIRE(item != nullptr);
+
+	CHECK(inst->perform(new AssignCommand(item, &ann)));
+	CHECK(ann.getWorkload() == 1);
+	CHECK(bob.getWorkload() == 0);
+
+	CHECK(inst->perform(new AssignCommand(item, &bob)));
+	CHECK(ann.getWorkload() == 0);
+	CHECK(bob.getWorkload() == 1);
+
+	CHECK(inst->undoLast());
+	CHECK(item->getAssignee() == &ann);
+	CHECK(ann.getWorkload() == 1);
+	CHECK(bob.getWorkload() == 0);
+	CHECK_FALSE(bob.unassign(&item->getTask()));
+
+	CHECK(inst->undoLast());
+	CHECK(item->getAssignee() == nullptr);
+	CHECK(ann.getWorkload() == 0);
+	CHECK_FALSE(ann.unassign(&item->getTask()));
 }
 
 TEST_CASE("an illegal command is refused and not added to the history") {

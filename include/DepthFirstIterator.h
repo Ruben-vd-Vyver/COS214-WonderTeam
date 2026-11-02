@@ -10,13 +10,15 @@
 class DepthFirstIterator : public WorkflowIterator {
 	private:
 		WorkflowNode* root_;
-		std::stack<WorkflowNode*> stack_;
+		struct Frame { WorkflowNode* node; int depth; Frame(WorkflowNode* n, int d) : node(n), depth(d) {} };
+		std::stack<Frame> stack_;
 
 		/**
 		 * @brief Performs the push children of operation.
 		 * @param node Value or object supplied by the caller.
+		 * @param parentDepth Depth of the node whose children are pushed.
 		 */
-		void pushChildrenOf(WorkflowNode* node);
+		void pushChildrenOf(WorkflowNode* node, int parentDepth);
 	public:
 		/**
 		 * @brief Constructs an object of this type.
@@ -41,6 +43,11 @@ class DepthFirstIterator : public WorkflowIterator {
 		 * @return Result produced by the operation.
 		 */
 		bool isDone() override;
+		/**
+		 * @brief Returns the current node's depth relative to the iterator root.
+		 * @return The current node's depth, or -1 if the iterator is done.
+		 */
+		int currentDepth() const override;
 };
 
 #endif // DEPTHFIRSTITERATOR_H

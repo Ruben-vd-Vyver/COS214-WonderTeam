@@ -1,5 +1,7 @@
 #include "WorkflowCommands.h"
 
+#include <limits>
+
 namespace
 {
     // Checks the number of fields (the command word counts as one) and that none are empty
@@ -28,6 +30,29 @@ namespace
         }
         if (result < 1)
             return false;
+        value = result;
+        return true;
+    }
+
+    // Parses a non-negative integer without overflowing
+    bool parseRequiredLevel(const std::string &text, int &value)
+    {
+        if (text.empty())
+            return false;
+
+        int result = 0;
+        for (size_t i = 0; i < text.size(); ++i)
+        {
+            if (text[i] < '0' || text[i] > '9')
+                return false;
+
+            const int digit = text[i] - '0';
+            if (result > (std::numeric_limits<int>::max() - digit) / 10)
+                return false;
+
+            result = result * 10 + digit;
+        }
+
         value = result;
         return true;
     }
@@ -97,11 +122,16 @@ void TaskCommand::execute(WorkflowBuilder &builder, const std::vector<std::strin
 // Attaches a named, registered approval chain to the task added just before
 void ApproveLineCommand::execute(WorkflowBuilder &builder, const std::vector<std::string> &args, DirectorContext &context)
 {
-    requireArgs(args, 3, 3, "approve | <trigger> | <chain name>");
+    requireArgs(args, 3, 4, "approve | <trigger> | <chain name> [| <required level>]");
     std::map<std::string, ApprovalHandler *>::const_iterator it = context.chains.find(args[2]);
     if (it == context.chains.end())
         throw std::string("unknown approval chain '" + args[2] + "' (register it with registerApprovalChain first)");
-    builder.requireApproval(args[1], it->second);
+
+    int requiredLevel = 1;
+    if (args.size() == 4 && !parseRequiredLevel(args[3], requiredLevel))
+        throw std::string("required approval level must be a non-negative integer");
+
+    builder.requireApproval(args[1], it->second, requiredLevel);
 }
 
 // Stops reading the scenario

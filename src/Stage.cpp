@@ -15,7 +15,7 @@ bool Stage::isParallel() const {
 }
 
 void Stage::activate() {
-	for (auto& c : children_) {
+	for (auto* c:children_) {
 		if(c->isComplete()) continue;
 		c->activate();
 		if(!parallel_) return;

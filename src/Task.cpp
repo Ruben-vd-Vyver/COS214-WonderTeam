@@ -1,5 +1,7 @@
 #include "Task.h"
 
+#include <utility>
+
 // Creates a task specification with a name and the role that performs it
 Task::Task(std::string name, std::string role) : name_(std::move(name)), requiredRole_(std::move(role)) {}
 
@@ -29,11 +31,17 @@ const std::vector<std::string> &Task::getRequiredFields() const
     return requiredFields_;
 }
 
-// Attaches an approval chain to a trigger, replacing any earlier one
-void Task::requireApproval(const std::string &trigger, ApprovalHandler *chain, int requiredLevel)
+// Attaches an approval chain and authority level to a trigger, replacing any earlier configuration
+void Task::requireApproval(
+    const std::string &trigger,
+    ApprovalHandler *chain,
+    int requiredLevel
+)
 {
     if (!chain)
         throw std::string("Task::requireApproval: chain is null");
+    if (requiredLevel < 0)
+        throw std::string("Task::requireApproval: required level cannot be negative");
     approvals_[trigger] = {chain, requiredLevel};
 }
 
@@ -50,7 +58,9 @@ ApprovalHandler *Task::getApprovalChain(const std::string &trigger) const
     return it == approvals_.end() ? nullptr : it->second.chain;
 }
 
-int Task::getRequiredLevel(const std::string& trigger) const {
+// Returns the configured authority level, defaulting to 1 when no approval is configured
+int Task::getRequiredLevel(const std::string &trigger) const
+{
     std::map<std::string, ApprovalInfo>::const_iterator it = approvals_.find(trigger);
     return it == approvals_.end() ? 1 : it->second.requiredLevel;
 }

@@ -57,4 +57,45 @@ TEST_CASE("unknown ids are reported as errors") {
 	CHECK_THROWS_AS(engine.statusReport("instance-99"), std::invalid_argument);
 }
 
+TEST_CASE("facade assignment, reassignment, and undo update participant workload") {
+	TividyEngine engine;
+	Participant ann("Ann", 1, roles("nurse"));
+	Participant bob("Bob", 1, roles("nurse"));
+	engine.registerParticipant(&ann);
+	engine.registerParticipant(&bob);
+
+	std::istringstream script(admissionScript());
+	WorkflowDirector director(script);
+	const std::string definitionId = engine.deploy(director, "Admission", 1);
+	const std::string instanceId = engine.startInstance(definitionId);
+
+	const auto assigneeOfTriage = [&engine, &instanceId]() {
+		const std::vector<TividyEngine::WorkflowEntry> entries = engine.workflowTree(instanceId);
+		for (std::size_t i = 0; i < entries.size(); ++i)
+			if (entries[i].id == "item-0")
+				return entries[i].assignee;
+		return std::string();
+	};
+
+	engine.assignItem(instanceId, "item-0", "Ann");
+	CHECK(ann.getWorkload() == 1);
+	CHECK(bob.getWorkload() == 0);
+	CHECK(assigneeOfTriage() == "Ann");
+
+	engine.assignItem(instanceId, "item-0", "Bob");
+	CHECK(ann.getWorkload() == 0);
+	CHECK(bob.getWorkload() == 1);
+	CHECK(assigneeOfTriage() == "Bob");
+
+	CHECK(engine.undoLast(instanceId));
+	CHECK(ann.getWorkload() == 1);
+	CHECK(bob.getWorkload() == 0);
+	CHECK(assigneeOfTriage() == "Ann");
+
+	CHECK(engine.undoLast(instanceId));
+	CHECK(ann.getWorkload() == 0);
+	CHECK(bob.getWorkload() == 0);
+	CHECK(assigneeOfTriage() == "unassigned");
+}
+
 }

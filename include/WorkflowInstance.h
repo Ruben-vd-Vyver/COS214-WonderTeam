@@ -139,6 +139,12 @@ public:
      */
     void createWorkItem(WorkItem *item);
     /**
+     * @brief Publishes an event describing a structural workflow change.
+     * @param eventType Type of structural change to publish.
+     * @param detail Human-readable details about the change.
+     */
+    void structureChanged(const std::string &eventType, const std::string &detail);
+    /**
      * @brief Performs the request approval operation.
      * @param item Value or object supplied by the caller.
      */

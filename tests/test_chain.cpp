@@ -74,6 +74,8 @@ TEST_CASE("a request is passed along until a handler decides it") {
 
         std::shared_ptr<Task> task = std::make_shared<Task>("Surgery Signoff", "doctor");
         task->requireApproval("review", &autoH, 3); //Requires level 3 authority
+        CHECK(task->getRequiredLevel("review") == 3);
+        CHECK(task->getRequiredLevel("unconfigured") == 1);
 
         BasicWorkItem item("item-surgery", task);
    

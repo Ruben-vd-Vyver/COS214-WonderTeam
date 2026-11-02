@@ -23,6 +23,7 @@ namespace testutil {
 inline std::string admissionScript() {
 	return
 		"# hospital admission\n"
+		"workflow | Admission | 1\n"
 		"task  | Triage     | nurse\n"
 		"stage | Tests      | parallel\n"
 		"task  | Blood test | nurse\n"

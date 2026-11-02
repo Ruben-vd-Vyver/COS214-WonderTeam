@@ -29,3 +29,5 @@ void SecuredItem::start() {
 WorkItem* SecuredItem::clone() const { 
 	return new SecuredItem(inner_->clone(), permittedRoles_); 
 }
+
+const std::vector<std::string>& SecuredItem::getPermittedRoles() const { return permittedRoles_; }

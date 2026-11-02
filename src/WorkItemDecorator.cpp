@@ -87,3 +87,5 @@ void WorkItemDecorator::restore(const WorkItemMemento& m) {
 	inner_->restore(m);
 }
 
+
+WorkItem* WorkItemDecorator::wrappedItem() const { return inner_; }
