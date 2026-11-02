@@ -1282,9 +1282,8 @@ void TuiApp::executeSelectedAction(char action)
         }
         else if (action == 'v')
         {
-            const int requiredLevel = promptInteger("Approval authority level required (0+):", 3);
             const std::string decision = engine_.submitApproval(instanceId_, itemId,
-                                                                 active->getName(), requiredLevel, "complete");
+                                                                 active->getName(), "complete");
             setMessage("Approval chain: " + decision);
         }
     }

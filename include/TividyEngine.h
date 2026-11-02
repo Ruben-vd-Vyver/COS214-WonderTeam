@@ -251,12 +251,20 @@ public:
      */
     bool undoLast(const std::string &instanceId);
 
-    // Run the task's configured Chain of Responsibility after a completion
-    // request has moved the item into AwaitingApproval. The result is applied
-    // via ApproveCommand / RejectCommand and recorded in CommandHistory.
-    std::string submitApproval(const std::string &instanceId, const std::string &itemId,
-                               const std::string &requesterName, int requiredLevel,
-                               const std::string &trigger = "complete");
+    /**
+     * @brief Runs the configured approval chain for an item awaiting approval.
+     * @param instanceId ID of the workflow instance.
+     * @param itemId ID of the item awaiting approval.
+     * @param requesterName Name of the participant requesting approval.
+     * @param trigger Event whose approval chain should be evaluated.
+     * @return The approval chain's decision reason.
+     */
+    std::string submitApproval(
+        const std::string &instanceId,
+        const std::string &itemId,
+        const std::string &requesterName,
+        const std::string &trigger = "complete"
+    );
 
     // Structured read model for a TUI; preserves the Facade boundary.
     /**

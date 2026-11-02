@@ -550,30 +550,45 @@ bool TividyEngine::undoLast(const std::string &instanceId)
     return record(instanceId).instance->undoLast();
 }
 
-std::string TividyEngine::submitApproval(const std::string &instanceId, const std::string &itemId,
-                                          const std::string &requesterName, int requiredLevel,
-                                          const std::string &trigger)
+std::string TividyEngine::submitApproval(
+    const std::string &instanceId,
+    const std::string &itemId,
+    const std::string &requesterName,
+    const std::string &trigger
+)
 {
-    if (requiredLevel < 0)
-        throw std::invalid_argument(msg("submitApproval", "required level cannot be negative"));
-
     WorkflowInstance &inst = *record(instanceId).instance;
     WorkItem &item = itemRef(inst, itemId);
     Participant &requester = actorRef(requesterName);
 
     if (item.getStateName() != "AwaitingApproval")
-        throw std::runtime_error(msg("submitApproval", "item '" + itemId +
-                                                      "' is not awaiting approval (state: " + item.getStateName() + ")"));
+        throw std::runtime_error(
+            msg(
+                "submitApproval",
+                "item '" + itemId +
+                    "' is not awaiting approval (state: " +
+                    item.getStateName() + ")"
+            )
+        );
 
     ApprovalHandler *chain = item.getTask().getApprovalChain(trigger);
     if (!chain)
-        throw std::runtime_error(msg("submitApproval", "no approval chain is configured for trigger '" + trigger + "'"));
+        throw std::runtime_error(
+            msg(
+                "submitApproval",
+                "no approval chain is configured for trigger '" +
+                    trigger + "'"
+            )
+        );
 
+    const int requiredLevel = item.getTask().getRequiredLevel(trigger);
     ApprovalRequest request(&item, &requester, requiredLevel);
     inst.requestApproval(&item);
     chain->handle(request);
     if (!request.isDecided())
-        throw std::runtime_error(msg("submitApproval", "the approval chain did not make a decision"));
+        throw std::runtime_error(
+            msg("submitApproval", "the approval chain did not make a decision")
+        );
 
     if (request.isApproved())
     {
@@ -586,9 +601,7 @@ std::string TividyEngine::submitApproval(const std::string &instanceId, const st
         inst.reject(&item);
     }
 
-    // An approval may have completed the sequential gate. Refresh activation
-    // immediately so downstream tasks leave Pending as soon as they are
-    // genuinely eligible.
+    // Refresh activation after the approval decision.
     inst.getRoot()->activate();
     return request.getReason();
 }

@@ -4,7 +4,8 @@
 # Commands:
 #   workflow | <workflow name> | <version>
 #   task     | <task name> | <required role>
-#   approve  | <trigger> | <approval chain name>
+#   approve  | <trigger> | <approval chain name> [| <required level>]
+#   The required level defaults to 1 when omitted.
 #   stage    | <stage name> | sequential|parallel
 #   end
 #   done
@@ -14,6 +15,8 @@ workflow | TIVIDY Example | 1
 # A root-level task. It must be completed and approved before Stage1 begins.
 task | Task1 | role1
 approve | complete | review
+# To require a higher authority level, append it to the approval command:
+# approve | complete | review | 3
 
 # Sequential stage: Task3 stays Pending until Task2 is completed.
 stage | Stage1 | sequential

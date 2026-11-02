@@ -55,11 +55,16 @@ public:
      */
     virtual void addCustomItem(std::shared_ptr<WorkItem> t) = 0;
     /**
-     * @brief Performs the require approval operation.
-     * @param trigger Value or object supplied by the caller.
-     * @param chain Value or object supplied by the caller.
+     * @brief Configures approval for the task most recently added.
+     * @param trigger Event that requires approval.
+     * @param chain Approval handler chain to evaluate.
+     * @param requiredLevel Minimum authority level required.
      */
-    virtual void requireApproval(const std::string &trigger, ApprovalHandler *chain) = 0;
+    virtual void requireApproval(
+        const std::string &trigger,
+        ApprovalHandler *chain,
+        int requiredLevel
+    ) = 0;
     /**
      * @brief Returns the result.
      * @return Result produced by the operation.

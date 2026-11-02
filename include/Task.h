@@ -19,7 +19,14 @@ private:
     std::string name_;
     std::string requiredRole_;
     std::vector<std::string> requiredFields_;
-    std::map<std::string, ApprovalHandler *> approvals_;
+
+    struct ApprovalInfo
+    {
+        ApprovalHandler *chain;
+        int requiredLevel;
+    };
+
+    std::map<std::string, ApprovalInfo> approvals_;
 
 public:
     /**
@@ -49,11 +56,16 @@ public:
      */
     const std::vector<std::string> &getRequiredFields() const;
     /**
-     * @brief Performs the require approval operation.
-     * @param trigger Value or object supplied by the caller.
-     * @param chain Value or object supplied by the caller.
+     * @brief Configures the approval chain and authority level for a trigger.
+     * @param trigger Event that requires approval.
+     * @param chain Approval handler chain to evaluate.
+     * @param requiredLevel Minimum authority level required; defaults to 1.
      */
-    void requireApproval(const std::string &trigger, ApprovalHandler *chain);
+    void requireApproval(
+        const std::string &trigger,
+        ApprovalHandler *chain,
+        int requiredLevel = 1
+    );
     /**
      * @brief Performs the requires approval operation.
      * @param trigger Value or object supplied by the caller.
@@ -66,6 +78,12 @@ public:
      * @return Result produced by the operation.
      */
     ApprovalHandler *getApprovalChain(const std::string &trigger) const;
+    /**
+     * @brief Returns the minimum authority level configured for a trigger.
+     * @param trigger Event whose required authority level is requested.
+     * @return Configured level, or 1 when the trigger has no approval.
+     */
+    int getRequiredLevel(const std::string &trigger) const;
 };
 
 #endif

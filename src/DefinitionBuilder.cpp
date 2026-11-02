@@ -103,15 +103,21 @@ void DefinitionBuilder::addCustomItem(std::shared_ptr<WorkItem> t)
     lastTask_.reset();
 }
 
-// Adds an approval handler to the task most recently created by the builder
-void DefinitionBuilder::requireApproval(const std::string &trigger, ApprovalHandler *chain)
+// Adds an approval handler and authority level to the task most recently created by the builder
+void DefinitionBuilder::requireApproval(
+    const std::string &trigger,
+    ApprovalHandler *chain,
+    int requiredLevel
+)
 {
     requireProduct();
     if (!lastTask_)
         throw std::string("DefinitionBuilder: requireApproval() must directly follow addTask()");
     if (!chain)
         throw std::string("DefinitionBuilder: requireApproval needs a handler chain");
-    lastTask_->requireApproval(trigger, chain);
+    if (requiredLevel < 0)
+        throw std::string("DefinitionBuilder: required approval level cannot be negative");
+    lastTask_->requireApproval(trigger, chain, requiredLevel);
     product_->addChain(chain);
 }
 
