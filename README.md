@@ -76,6 +76,16 @@ Run with a custom workflow file:
 ```bash
 docker run --rm -it tividy /app/workflows/workflow_file.txt
 ```
+To Test:
+Download the doctest.h file and place it into /tests
+```bash
+cd tests
+g++ -std=c++11 -Wall -Wextra -I../include ../src/*.cpp test_pattern.cpp -o test_pattern_runner 
+```
+Replace "pattern" with the pattern of the test file you would like to run
+```bash
+./test_pattern_runner 
+```
 
 ### Links
  - [Demo Document](https://docs.google.com/document/d/1Tvk2_Lwu3TnETVxUGc6hZ45iJdSNOIl9Yx-YCw3b26I/edit?usp=sharing)
